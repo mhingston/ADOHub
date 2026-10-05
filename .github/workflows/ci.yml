@@ -16,10 +16,10 @@ jobs:
       - run: npm install --no-audit --no-fund
       - name: Emit lockfile for bootstrap
         run: |
-          echo "LOCKFILE_GZIP_BASE64_BEGIN"
-          gzip -c package-lock.json | base64 -w0
+          echo "LOCKFILE_BASE64_BEGIN"
+          base64 -w0 package-lock.json
           echo
-          echo "LOCKFILE_GZIP_BASE64_END"
+          echo "LOCKFILE_BASE64_END"
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
