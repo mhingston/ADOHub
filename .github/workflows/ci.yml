@@ -13,13 +13,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm install --no-audit --no-fund
-      - name: Emit lockfile for bootstrap
-        run: |
-          echo "LOCKFILE_BASE64_BEGIN"
-          base64 -w0 package-lock.json
-          echo
-          echo "LOCKFILE_BASE64_END"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
