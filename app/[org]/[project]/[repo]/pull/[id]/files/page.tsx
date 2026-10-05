@@ -21,10 +21,10 @@ export default async function FilesPage({ params }: { params: Promise<{ org: str
       {files.length === 0 ? <div className="empty-state">No changed files found.</div> : files.map((file) => (
         <section className="diff-card" key={file.path}>
           <div className="diff-header"><strong>{file.path}</strong><span className="muted">{file.changeType}</span></div>
-          {file.binary ? <div className="empty-state">Binary or unavailable content; diff cannot be rendered safely.</div> : file.tooLarge ? <div className="empty-state">File is too large for the inline MVP diff.</div> : file.patch ? <pre className="diff-view">{renderPatch(file.patch)}</pre> : <div className="empty-state">Diff content unavailable.</div>}
+          {file.binary ? <div className="empty-state">Binary or unavailable content; diff cannot be rendered safely.</div> : file.tooLarge ? <div className="empty-state">File is too large for the inline MVP diff.</div> : file.renderingDeferred ? <div className="empty-state">Inline diff omitted after the first 30 files; the file remains listed.</div> : file.patch ? <pre className="diff-view">{renderPatch(file.patch)}</pre> : <div className="empty-state">Diff content unavailable.</div>}
         </section>
       ))}
-      <p className="muted small">Inline diff rendering is capped at 30 changed files and 400 KB of combined text per file to keep large PRs usable.</p>
+      <p className="muted small">All changed files are listed. Inline diff content is rendered for the first 30 files and capped at 400 KB of combined text per file.</p>
     </>
   );
 }

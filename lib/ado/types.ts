@@ -86,6 +86,7 @@ export interface AdoBuild {
   reason?: string;
   requestedFor?: AdoIdentity;
   definition?: { id?: number; name?: string };
+  repository?: { id?: string; name?: string; type?: string };
   triggerInfo?: Record<string, string>;
   _links?: { web?: { href?: string } };
 }

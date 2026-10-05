@@ -72,11 +72,12 @@ ADO_PAT=...
 ADO_ORG=optional-default-org
 ADO_PROJECT=optional-default-project
 ADO_REPO=optional-default-repo
+ADO_MUTATIONS_ENABLED=false
 ```
 
 `ADO_PAT` is only read inside the server-side Azure DevOps adapter. It is never exposed through a `NEXT_PUBLIC_` variable or stored in browser storage.
 
-For read-only use, grant Code read and Build read. To cancel or queue builds, grant the corresponding Build execute permission. Keep PAT scope as narrow as possible.
+For read-only use, grant Code read and Build read. Keep PAT scope as narrow as possible.\n\nPipeline mutations are **disabled by default**. To enable cancel/re-run for the local MVP, set `ADO_MUTATIONS_ENABLED=true` and configure `ADO_ORG`, `ADO_PROJECT` and `ADO_REPO`. Those three values become a strict server-side mutation allowlist; requests outside that repository are rejected before a write is sent to Azure DevOps. Do not enable PAT-backed mutations on a public deployment without adding application authentication. The PAT also needs Build execute permission for writes.
 
 Install and run:
 

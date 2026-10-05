@@ -12,8 +12,9 @@ export default async function PullsPage({
   const { org, project, repo } = await params;
   const filters = await searchParams;
   const repository = await getRepository(org, project, repo);
-  const state = filters.state === "closed" ? "completed" : filters.state === "all" ? "all" : "active";
+  const state = filters.state === "closed" || filters.state === "all" ? "all" : "active";
   let pulls = await listPullRequests(org, project, repository.id, state);
+  if (filters.state === "closed") pulls = pulls.filter((pr) => pr.status === "completed" || pr.status === "abandoned");
   if (filters.view === "draft") pulls = pulls.filter((pr) => pr.isDraft);
   const base = `/${[org, project, repo].map(encodeURIComponent).join("/")}`;
 

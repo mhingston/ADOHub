@@ -115,7 +115,7 @@ export function normalizeTimelineStatus(record: AdoTimelineRecord): RunStatus {
   const state = record.state?.toLowerCase();
   if (result === "succeeded" || result === "succeededwithissues") return "success";
   if (result === "failed") return "failure";
-  if (result === "canceled" || result === "cancelled") return "cancelled";
+  if (result === "canceled" || result === "cancelled" || result === "abandoned") return "cancelled";
   if (result === "skipped") return "skipped";
   if (state === "inprogress") return "running";
   return "queued";

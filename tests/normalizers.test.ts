@@ -32,6 +32,7 @@ describe("Azure DevOps normalization", () => {
 
   it("normalizes task timeline records and ignores unhelpful record types", () => {
     expect(normalizeTimelineRecord({ id: "1", type: "Task", name: "unit tests", state: "completed", result: "failed", log: { id: 99 } })).toMatchObject({ kind: "step", name: "unit tests", status: "failure", logId: 99 });
-    expect(normalizeTimelineRecord({ id: "2", type: "Checkpoint", name: "approval" })).toBeNull();
+    expect(normalizeTimelineRecord({ id: "2", type: "Task", name: "cancelled task", state: "completed", result: "abandoned" })).toMatchObject({ status: "cancelled" });
+    expect(normalizeTimelineRecord({ id: "3", type: "Checkpoint", name: "approval" })).toBeNull();
   });
 });

@@ -267,7 +267,7 @@ export async function getPullRequestFiles(
   ]);
   const sourceCommit = pr.sourceCommit;
   const targetCommit = pr.targetCommit;
-  const fileChanges = changes.filter((change) => change.item?.path && !change.item.isFolder).slice(0, maxDiffFiles);
+  const fileChanges = changes.filter((change) => change.item?.path && !change.item.isFolder);
 
   if (!sourceCommit || !targetCommit) {
     return fileChanges.map((change) => ({
@@ -277,8 +277,12 @@ export async function getPullRequestFiles(
   }
 
   return mapInBatches(fileChanges, 5, async (change) => {
+    const index = fileChanges.indexOf(change);
     const path = change.item?.path ?? "unknown";
     const changeType = change.changeType?.toLowerCase() ?? "edit";
+    if (index >= maxDiffFiles) {
+      return { path, changeType, renderingDeferred: true } satisfies PullRequestFile;
+    }
     const [before, after] = await Promise.all([
       changeType.includes("add") ? Promise.resolve("") : getItemText(org, project, repoId, path, targetCommit),
       changeType.includes("delete") ? Promise.resolve("") : getItemText(org, project, repoId, path, sourceCommit),

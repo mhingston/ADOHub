@@ -22,6 +22,7 @@ export async function getPullRequestChecks(org: string, project: string, repoId:
       repositoryId: repoId,
       repositoryType: "TfsGit",
       reasonFilter: "pullRequest",
+      branchName: `refs/pull/${prId}/merge`,
       queryOrder: "queueTimeDescending",
       "$top": 100,
       "api-version": API_VERSION,

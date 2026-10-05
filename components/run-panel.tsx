@@ -3,14 +3,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Status } from "@/components/status";
-import type { LogChunk, TimelineItem, WorkflowRunDetail } from "@/lib/domain";
+import type { LogChunk, TimelineItem, WorkflowRun, WorkflowRunDetail } from "@/lib/domain";
 
 function encode(value: string) {
   return encodeURIComponent(value);
 }
 
 function activeLogItem(run: WorkflowRunDetail): TimelineItem | undefined {
-  return run.timeline.find((item) => item.status === "failure" && item.logId)
+  return run.timeline.find((item) => item.kind === "step" && item.status === "failure" && item.logId)
+    ?? run.timeline.find((item) => item.kind === "step" && item.status === "running" && item.logId)
+    ?? run.timeline.find((item) => item.status === "failure" && item.logId)
     ?? run.timeline.find((item) => item.status === "running" && item.logId)
     ?? [...run.timeline].reverse().find((item) => item.logId);
 }
@@ -44,6 +46,8 @@ export function RunPanel({
   const logItem = useMemo(() => activeLogItem(run), [run]);
   const [logText, setLogText] = useState(initialLog?.text ?? "");
   const [logId, setLogId] = useState<number | undefined>(initialLog?.logId);
+  const [mutationError, setMutationError] = useState<string>();
+  const [pendingAction, setPendingAction] = useState<"cancel" | "rerun">();
   const nextLine = useRef((initialLog?.lineCount ?? 0) + 1);
 
   useEffect(() => {
@@ -77,11 +81,20 @@ export function RunPanel({
   }, [logId, logItem?.logId, org, project, run.id, run.status]);
 
   async function mutate(action: "cancel" | "rerun") {
-    const response = await fetch(`/api/runs/${run.id}/${action}?org=${encode(org)}&project=${encode(project)}`, { method: "POST" });
-    if (!response.ok) throw new Error(await response.text());
-    const next = (await response.json()) as WorkflowRunDetail;
-    if (action === "rerun") window.location.assign(window.location.pathname.replace(/\/\d+$/, `/${next.id}`));
-    else await query.refetch();
+    setPendingAction(action);
+    setMutationError(undefined);
+    try {
+      const response = await fetch(`/api/runs/${run.id}/${action}?org=${encode(org)}&project=${encode(project)}`, { method: "POST" });
+      const body = await response.json().catch(() => undefined) as (WorkflowRun & { error?: string }) | undefined;
+      if (!response.ok) throw new Error(body?.error ?? `Pipeline ${action} failed (${response.status})`);
+      if (!body) throw new Error(`Pipeline ${action} returned no build`);
+      if (action === "rerun") window.location.assign(window.location.pathname.replace(/\/\d+$/, `/${body.id}`));
+      else await query.refetch();
+    } catch (error) {
+      setMutationError(error instanceof Error ? error.message : `Pipeline ${action} failed`);
+    } finally {
+      setPendingAction(undefined);
+    }
   }
 
   return (
@@ -93,11 +106,12 @@ export function RunPanel({
           <div className="muted">{run.branch || "unknown branch"}{run.commit ? ` · ${run.commit.slice(0, 8)}` : ""}</div>
         </div>
         <div className="actions">
-          {run.status === "running" ? <button className="button danger" onClick={() => void mutate("cancel")}>Cancel</button> : null}
-          {["success", "failure", "cancelled"].includes(run.status) ? <button className="button" onClick={() => void mutate("rerun")}>Re-run</button> : null}
+          {run.status === "running" ? <button disabled={Boolean(pendingAction)} className="button danger" onClick={() => void mutate("cancel")}>{pendingAction === "cancel" ? "Cancelling…" : "Cancel"}</button> : null}
+          {["success", "failure", "cancelled"].includes(run.status) ? <button disabled={Boolean(pendingAction)} className="button" onClick={() => void mutate("rerun")}>{pendingAction === "rerun" ? "Re-running…" : "Re-run"}</button> : null}
           {run.webUrl ? <a className="button secondary" href={run.webUrl}>Open in Azure DevOps</a> : null}
         </div>
       </div>
+      {mutationError ? <div className="error-banner" role="alert">{mutationError}</div> : null}
 
       <section>
         <h2>Jobs and steps</h2>

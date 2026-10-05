@@ -94,6 +94,7 @@ export interface PullRequestFile {
   patch?: string;
   binary?: boolean;
   tooLarge?: boolean;
+  renderingDeferred?: boolean;
 }
 
 export type RunStatus = CheckStatus;
