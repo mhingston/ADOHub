@@ -9,14 +9,14 @@ type Props = {
   pr: PullRequestSummary;
   base: string;
   activeTab: PullRequestTab;
-  checksCount: number;
+  checksCount?: number;
 };
 
 export function PullRequestTabs({ pr, base, activeTab, checksCount }: Props) {
   const conversationHref = `${base}/pull/${pr.id}`;
   const tabs: { id: PullRequestTab; label: string; href: string }[] = [
     { id: "conversation", label: "Conversation", href: conversationHref },
-    { id: "checks", label: `Checks ${checksCount}`, href: `${conversationHref}/checks` },
+    { id: "checks", label: checksCount === undefined ? "Checks" : `Checks ${checksCount}`, href: `${conversationHref}/checks` },
     { id: "files", label: "Files changed", href: `${conversationHref}/files` },
   ];
 

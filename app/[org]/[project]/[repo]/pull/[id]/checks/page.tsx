@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function PullRequestChecksPage({ params }: { params: Promise<{ org: string; project: string; repo: string; id: string }> }) {
   const { org, project, repo, id } = await params;
   const prId = Number(id);
-  if (!Number.isInteger(prId) || prId < 1) throw new Error("Invalid pull request id");
+  if (!Number.isSafeInteger(prId) || prId < 1) throw new Error("Invalid pull request id");
   const repository = await getRepository(org, project, repo);
   const [pr, checks, currentUserId] = await Promise.all([
     getPullRequest(org, project, repository.id, prId),
