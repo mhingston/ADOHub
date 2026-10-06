@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type FormEvent } from "react";
 import { CheckList } from "@/components/check-list";
-import { ReviewBadge, Status } from "@/components/status";
+import { PullRequestTabs } from "@/components/pull-request-tabs";
+import { ReviewBadge } from "@/components/status";
 import type { Check, PullRequestComment, PullRequestSummary, Review } from "@/lib/domain";
 
 type PullRequestView = PullRequestSummary & { mergeStatus?: string };
@@ -15,6 +15,7 @@ type Props = {
   project: string;
   repo: string;
   base: string;
+  activeTab: "conversation" | "checks";
   mutationsEnabled: boolean;
   initial: WorkflowData;
 };
@@ -62,7 +63,7 @@ async function readJson(response: Response): Promise<Record<string, unknown>> {
   return await response.json().catch(() => ({})) as Record<string, unknown>;
 }
 
-export function PullRequestWorkflow({ org, project, repo, base, mutationsEnabled, initial }: Props) {
+export function PullRequestWorkflow({ org, project, repo, base, activeTab, mutationsEnabled, initial }: Props) {
   const queryClient = useQueryClient();
   const queryKey = ["pull-request-workflow", org, project, repo, initial.pr.id];
   const target = `/api/repos/${[org, project, repo].map(encodeURIComponent).join("/")}/pull-requests/${initial.pr.id}`;
@@ -143,36 +144,29 @@ export function PullRequestWorkflow({ org, project, repo, base, mutationsEnabled
       {query.error ? <div className="error-banner" role="alert">{query.error.message}</div> : null}
       {actionError ? <div className="error-banner" role="alert">{actionError}</div> : null}
       {!mutationsEnabled ? <div className="mutations-disabled" role="status">PR mutations are disabled for this deployment.</div> : null}
-      <div className="pr-heading">
-        <h1>{data.pr.title} <span className="muted">#{data.pr.id}</span></h1>
-        <div className="muted"><span className={`state-badge ${active ? "open" : ""}`}>{data.pr.isDraft ? "Draft" : data.pr.status}</span> {data.pr.author} wants to merge <strong>{data.pr.sourceBranch}</strong> into <strong>{data.pr.targetBranch}</strong></div>
-      </div>
-      <nav className="subtabs">
-        <a className="subtab active" href="#conversation">Conversation</a>
-        <a className="subtab" href="#checks">Checks {data.checks.length}</a>
-        <Link className="subtab" href={`${base}/pull/${data.pr.id}/files`}>Files changed</Link>
-      </nav>
+      <PullRequestTabs pr={data.pr} base={base} activeTab={activeTab} checksCount={data.checks.length} />
       <div className="pr-grid">
         <div>
-          <section className="card prose-card"><h2>Description</h2><pre className="prose-pre">{data.pr.description || "No description provided."}</pre></section>
-          <section id="conversation">
-            <h2>Conversation</h2>
-            {data.comments.length === 0 ? <div className="empty-state">No comments yet.</div> : data.comments.map((comment) => (
-              <article className="comment card" key={`${comment.threadId}-${comment.id}`}>
-                <div className="comment-header"><strong>{comment.author}</strong><span className="muted small">{comment.publishedAt ? new Date(comment.publishedAt).toLocaleString() : ""}</span></div>
-                <pre className="prose-pre">{comment.content}</pre>
-              </article>
-            ))}
-            {active ? <form className="comment-form card" onSubmit={(event) => void submitComment(event)}>
-              <label htmlFor="pr-comment"><strong>Add a comment</strong></label>
-              <textarea id="pr-comment" rows={5} maxLength={10_000} disabled={!mutationsEnabled} value={commentText} onChange={(event) => setCommentText(event.target.value)} placeholder="Leave a comment" />
-              <div className="actions"><button className="button primary" disabled={!mutationsEnabled || Boolean(busy) || !commentText.trim()}>{busy === "comments" ? "Commenting…" : "Comment"}</button></div>
-            </form> : null}
-          </section>
-          <section id="checks">
-            <div className="section-heading"><h2>Checks</h2><span className="muted">{passed} passed · {failed} failed · {pending} pending</span></div>
+          {activeTab === "conversation" ? <>
+            <section className="card prose-card"><h2>Description</h2><pre className="prose-pre">{data.pr.description || "No description provided."}</pre></section>
+            <section aria-labelledby="conversation-heading">
+              <h2 id="conversation-heading">Conversation</h2>
+              {data.comments.length === 0 ? <div className="empty-state">No comments yet.</div> : data.comments.map((comment) => (
+                <article className="comment card" key={`${comment.threadId}-${comment.id}`}>
+                  <div className="comment-header"><strong>{comment.author}</strong><span className="muted small">{comment.publishedAt ? new Date(comment.publishedAt).toLocaleString() : ""}</span></div>
+                  <pre className="prose-pre">{comment.content}</pre>
+                </article>
+              ))}
+              {active ? <form className="comment-form card" onSubmit={(event) => void submitComment(event)}>
+                <label htmlFor="pr-comment"><strong>Add a comment</strong></label>
+                <textarea id="pr-comment" rows={5} maxLength={10_000} disabled={!mutationsEnabled} value={commentText} onChange={(event) => setCommentText(event.target.value)} placeholder="Leave a comment" />
+                <div className="actions"><button className="button primary" disabled={!mutationsEnabled || Boolean(busy) || !commentText.trim()}>{busy === "comments" ? "Commenting…" : "Comment"}</button></div>
+              </form> : null}
+            </section>
+          </> : <section aria-labelledby="checks-heading">
+            <div className="section-heading"><h2 id="checks-heading">Checks</h2><span className="muted">{passed} passed · {failed} failed · {pending} pending</span></div>
             <CheckList checks={data.checks} runHref={(runId) => `${base}/actions/runs/${runId}`} />
-          </section>
+          </section>}
         </div>
         <aside className="sidebar">
           <div className="sidebar-block">
