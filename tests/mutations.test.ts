@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AdoHttpError, AzureDevOpsClient } from "@/lib/ado/client";
 import { publicError } from "@/lib/ado/errors";
 import { assertMutationAllowed } from "@/lib/ado/mutations";
-import { createCompletionPayload } from "@/lib/ado/pull-request-mutations";
+import { createCompletionPayload, createInlineCommentPayload } from "@/lib/ado/pull-request-mutations";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -23,6 +23,30 @@ describe("PR mutation payloads and safe Azure errors", () => {
     expect(createCompletionPayload("abcdef", "noFastForward", true).completionOptions).toMatchObject({
       mergeStrategy: "noFastForward",
       deleteSourceBranch: true,
+    });
+  });
+
+  it("builds an Azure inline thread payload with the exact file and iteration anchor", () => {
+    expect(createInlineCommentPayload("Review this line", {
+      filePath: "/src/file.ts",
+      lineNumber: 12,
+      side: "new",
+      changeTrackingId: 41,
+      latestIteration: 3,
+    })).toEqual({
+      comments: [{ parentCommentId: 0, content: "Review this line", commentType: 1 }],
+      status: 1,
+      threadContext: {
+        filePath: "/src/file.ts",
+        leftFileStart: null,
+        leftFileEnd: null,
+        rightFileStart: { line: 12, offset: 1 },
+        rightFileEnd: { line: 12, offset: 1 },
+      },
+      pullRequestThreadContext: {
+        changeTrackingId: 41,
+        iterationContext: { firstComparingIteration: 0, secondComparingIteration: 3 },
+      },
     });
   });
 

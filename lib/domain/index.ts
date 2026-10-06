@@ -33,6 +33,14 @@ export interface RepositoryItem {
   size?: number;
 }
 
+export interface RepositoryFileContent {
+  path: string;
+  branch: string;
+  content?: string;
+  binary?: boolean;
+  tooLarge?: boolean;
+}
+
 export interface Branch {
   name: string;
   objectId: string;
@@ -83,6 +91,17 @@ export interface PullRequestComment {
   status?: string;
 }
 
+export interface PullRequestInlineComment {
+  threadId: number;
+  commentId: number;
+  author: string;
+  content: string;
+  publishedAt?: string;
+  status?: string;
+  lineNumber: number;
+  side: "old" | "new";
+}
+
 export interface PullRequestDetail extends PullRequestSummary {
   comments: PullRequestComment[];
   checks: Check[];
@@ -94,7 +113,9 @@ export interface PullRequestFile {
   previousPath?: string;
   changeType: string;
   size?: number;
-  patch?: string;
+  beforeContent?: string;
+  afterContent?: string;
+  inlineComments?: PullRequestInlineComment[];
   binary?: boolean;
   tooLarge?: boolean;
   renderingDeferred?: boolean;

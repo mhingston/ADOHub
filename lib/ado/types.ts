@@ -75,6 +75,18 @@ export interface AdoThread {
   id: number;
   status?: string;
   comments?: AdoComment[];
+  threadContext?: {
+    filePath?: string;
+    leftFileStart?: { line?: number; offset?: number };
+    rightFileStart?: { line?: number; offset?: number };
+  };
+  pullRequestThreadContext?: {
+    changeTrackingId?: number;
+    iterationContext?: {
+      firstComparingIteration?: number;
+      secondComparingIteration?: number;
+    };
+  };
 }
 
 export interface AdoPullRequestIteration {

@@ -15,11 +15,13 @@ export default async function RepositoryLayout({
   const { org, project, repo } = await params;
   const repository = await getRepository(org, project, repo);
   const basePath = `/${[org, project, repo].map(encodeURIComponent).join("/")}`;
+  const adoOrgUrl = `https://dev.azure.com/${encodeURIComponent(org)}`;
+  const adoProjectUrl = `${adoOrgUrl}/${encodeURIComponent(project)}`;
   return (
     <>
       <div className="repo-header">
         <div className="repo-title">
-          <Link href="/" className="muted-link">{org}</Link><span>/</span><span className="project-label">{project}</span><span>/</span><strong>{repository.name}</strong>
+          <a href={adoOrgUrl} className="muted-link">{org}</a><span>/</span><a href={adoProjectUrl} className="project-label">{project}</a><span>/</span><Link className="repo-breadcrumb" href={basePath}><strong>{repository.name}</strong></Link>
         </div>
         <RepoNav basePath={basePath} />
       </div>

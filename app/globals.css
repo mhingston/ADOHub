@@ -54,6 +54,8 @@ h2 { font-size: 18px; }
 
 .repo-header { background: var(--canvas); border-bottom: 1px solid var(--border); padding: 20px 32px 0; }
 .repo-title { display: flex; gap: 7px; align-items: center; font-size: 20px; margin-bottom: 18px; }
+.repo-breadcrumb { color: var(--fg); }
+.repo-breadcrumb:hover { text-decoration: none; }
 .project-label { color: var(--muted); }
 .muted-link { color: var(--muted); }
 .repo-tabs { display: flex; gap: 4px; overflow-x: auto; }
@@ -69,6 +71,14 @@ h2 { font-size: 18px; }
 .list-row, .pr-row, .run-row { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--border); }
 .list-row:first-child, .pr-row:first-child, .run-row:first-child { border-top: 0; }
 .list-row:hover, .pr-row:hover, .run-row:hover { background: color-mix(in srgb, var(--fg) 3%, transparent); }
+.code-row { color: var(--fg); text-decoration: none; }
+.code-row:hover { color: var(--fg); text-decoration: none; }
+.code-heading { align-items: flex-start; }
+.code-heading h1 { margin: 0 0 5px; }
+.code-breadcrumbs { color: var(--muted); font-size: 13px; }
+.code-breadcrumbs strong { color: var(--fg); }
+.code-file { padding: 0; overflow: hidden; }
+.code-file-content { max-height: 78vh; margin: 0; padding: 16px; overflow: auto; white-space: pre; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .check-required { border-left: 3px solid var(--warning); }
 .check-required strong { font-weight: 700; }
 .check-failed { background: color-mix(in srgb, var(--danger) 4%, transparent); }
@@ -79,6 +89,7 @@ h2 { font-size: 18px; }
 .right { text-align: right; }
 .counter, .draft-badge, .state-badge, .branch-chip { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; background: var(--canvas); font-size: 12px; }
 .branch-chip { padding: 5px 10px; }
+.branch-chip:hover { text-decoration: none; border-color: var(--accent); }
 .state-badge.open { background: color-mix(in srgb, var(--success) 12%, var(--bg)); color: var(--success); border-color: color-mix(in srgb, var(--success) 40%, var(--border)); }
 
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--fg); font-weight: 600; cursor: pointer; }
@@ -141,6 +152,22 @@ h2 { font-size: 18px; }
 
 .diff-card { margin: 14px 0 20px; overflow: hidden; }
 .diff-header { display: flex; justify-content: space-between; gap: 12px; padding: 9px 12px; background: var(--canvas); border-bottom: 1px solid var(--border); }
+.diff-file-toggle { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; padding: 0; border: 0; color: var(--fg); background: transparent; text-align: left; cursor: pointer; }
+.diff-file-toggle strong { min-width: 0; overflow-wrap: anywhere; }
+.diff-file-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.diff-chevron { display: inline-block; flex: 0 0 auto; color: var(--muted); transition: transform 120ms ease; }
+.diff-chevron.expanded { transform: rotate(90deg); }
+.diff-header > .muted { flex: 0 0 auto; white-space: nowrap; }
+.diff-toolbar { justify-content: flex-end; }
+.ado-diff-view { max-width: 100%; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.inline-comment-form { display: grid; gap: 10px; padding: 12px; color: var(--fg); background: var(--canvas); border: 1px solid var(--border); border-radius: 6px; }
+.inline-comment-form .comment-header { padding: 0; background: transparent; border: 0; align-items: center; }
+.inline-comment-form textarea { width: 100%; resize: vertical; border: 1px solid var(--border); border-radius: 6px; padding: 9px; color: var(--fg); background: var(--bg); font: inherit; }
+.inline-comment-list { padding: 0 12px 12px; }
+.inline-comment-preview { margin-top: 10px; overflow: hidden; border: 1px solid var(--border); border-radius: 6px; }
+.inline-comment-preview .comment-header { align-items: center; }
+.inline-comment-preview .prose-pre { padding: 10px 12px; }
+.inline-comment-success { padding: 8px 12px; color: var(--success); }
 .diff-view, .log-view { margin: 0; padding: 12px; overflow: auto; font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; tab-size: 4; }
 .diff-add { display: inline-block; width: 100%; background: color-mix(in srgb, var(--success) 15%, transparent); }
 .diff-del { display: inline-block; width: 100%; background: color-mix(in srgb, var(--danger) 15%, transparent); }

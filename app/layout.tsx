@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Providers } from "@/components/providers";
+import "@git-diff-view/react/styles/diff-view-pure.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
