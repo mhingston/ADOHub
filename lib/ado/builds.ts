@@ -1,5 +1,5 @@
 import { AdoHttpError, AzureDevOpsClient } from "@/lib/ado/client";
-import { normalizeBuild, normalizeTimelineRecord } from "@/lib/ado/normalizers";
+import { normalizeBuild, normalizeTimelineRecords } from "@/lib/ado/normalizers";
 import type { AdoBuild, AdoTimelineRecord } from "@/lib/ado/types";
 import type { LogChunk, WorkflowRun, WorkflowRunDetail } from "@/lib/domain";
 
@@ -48,10 +48,7 @@ export async function getRun(
     if (!(error instanceof AdoHttpError) || error.status !== 404) throw error;
   }
 
-  const items = (timeline.records ?? [])
-    .map(normalizeTimelineRecord)
-    .filter((item): item is NonNullable<typeof item> => item !== null)
-    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+  const items = normalizeTimelineRecords(timeline.records ?? []);
   return { ...normalizeBuild(build), timeline: items };
 }
 
@@ -61,6 +58,11 @@ export function countLogLines(text: string): number {
   return parts.length - (text.endsWith("\n") ? 1 : 0);
 }
 
+export function isTextLogContentType(contentType?: string): boolean {
+  if (!contentType) return true;
+  return contentType.split(";", 1)[0].trim().toLowerCase() === "text/plain";
+}
+
 export async function getRunLog(
   org: string,
   project: string,
@@ -68,14 +70,17 @@ export async function getRunLog(
   logId: number,
   startLine = 1,
 ): Promise<LogChunk> {
-  const text = await client(org, project).getText(
+  const response = await client(org, project).getTextWithContentType(
     `build/builds/${encodeURIComponent(runId)}/logs/${logId}`,
     {
       startLine,
       "api-version": API_VERSION,
     },
   );
-  const normalized = text.replace(/\r\n/g, "\n");
+  if (!isTextLogContentType(response.contentType)) {
+    throw new Error("Azure DevOps returned a non-text response instead of a pipeline log.");
+  }
+  const normalized = response.text.replace(/\r\n/g, "\n");
   return { logId, text: normalized, startLine, lineCount: countLogLines(normalized) };
 }
 

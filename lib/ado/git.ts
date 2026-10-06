@@ -6,6 +6,7 @@ import type {
   AdoPullRequest,
   AdoPullRequestChange,
   AdoPullRequestIteration,
+  AdoPullRequestIterationChanges,
   AdoRef,
   AdoRepository,
   AdoThread,
@@ -114,8 +115,9 @@ function normalizeReview(identity: NonNullable<AdoPullRequest["reviewers"]>[numb
   };
 }
 
-function normalizePullRequest(pr: AdoPullRequest): PullRequestSummary {
+export function normalizePullRequest(pr: AdoPullRequest): PullRequestSummary {
   const status = pr.status === "completed" ? "completed" : pr.status === "abandoned" ? "abandoned" : "open";
+  const repoUrl = pr.repository?.webUrl?.replace(/\/$/, "");
   return {
     id: pr.pullRequestId,
     title: pr.title,
@@ -128,11 +130,47 @@ function normalizePullRequest(pr: AdoPullRequest): PullRequestSummary {
     status,
     reviewers: (pr.reviewers ?? []).map(normalizeReview),
     createdAt: pr.creationDate ?? new Date(0).toISOString(),
-    updatedAt: pr.closedDate ?? pr.creationDate ?? new Date(0).toISOString(),
-    webUrl: pr._links?.web?.href,
+    closedAt: pr.closedDate,
+    updatedAt: pr.updatedDate,
+    webUrl: pr._links?.web?.href ?? (repoUrl ? `${repoUrl}/pullrequest/${pr.pullRequestId}` : undefined),
     sourceCommit: pr.lastMergeSourceCommit?.commitId,
     targetCommit: pr.lastMergeTargetCommit?.commitId,
   };
+}
+
+export interface PullRequestFileEntry {
+  change: AdoPullRequestChange;
+  path: string;
+  previousPath?: string;
+  changeType: string;
+  size?: number;
+}
+
+export function normalizeIterationChangePage(response: AdoPullRequestIterationChanges) {
+  return {
+    entries: response.changeEntries ?? response.changes?.changeEntries ?? [],
+    nextSkip: response.nextSkip ?? response.changes?.nextSkip,
+    nextTop: response.nextTop ?? response.changes?.nextTop,
+  };
+}
+
+export function normalizePullRequestFileChanges(changes: AdoPullRequestChange[]): PullRequestFileEntry[] {
+  return changes.flatMap((change) => {
+    if (change.item?.isFolder) return [];
+    const path = change.item?.path || change.originalPath;
+    if (!path) return [];
+    return [{
+      change,
+      path,
+      previousPath: change.originalPath && change.originalPath !== path ? change.originalPath : undefined,
+      changeType: change.changeType?.toLowerCase() ?? "edit",
+      size: change.item?.size,
+    }];
+  });
+}
+
+export function isInlineDiffDeferred(index: number, maxDiffFiles: number) {
+  return index >= maxDiffFiles;
 }
 
 export async function listPullRequests(
@@ -141,15 +179,24 @@ export async function listPullRequests(
   repoId: string,
   status: "active" | "completed" | "abandoned" | "all" = "active",
 ): Promise<PullRequestSummary[]> {
-  const response = await client(org, project).get<ValueResponse<AdoPullRequest>>(
-    `git/repositories/${encodeURIComponent(repoId)}/pullrequests`,
-    {
-      "searchCriteria.status": status,
-      "$top": 100,
-      "api-version": API_VERSION,
-    },
-  );
-  return (response.value ?? []).map(normalizePullRequest);
+  const scoped = client(org, project);
+  const pulls: AdoPullRequest[] = [];
+  const pageSize = 100;
+  for (let skip = 0; ; skip += pageSize) {
+    const response = await scoped.get<ValueResponse<AdoPullRequest>>(
+      `git/repositories/${encodeURIComponent(repoId)}/pullrequests`,
+      {
+        "searchCriteria.status": status,
+        "$top": pageSize,
+        "$skip": skip,
+        "api-version": API_VERSION,
+      },
+    );
+    const page = response.value ?? [];
+    pulls.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return pulls.map(normalizePullRequest);
 }
 
 export async function getPullRequest(
@@ -203,7 +250,8 @@ async function latestIteration(
     `git/repositories/${encodeURIComponent(repoId)}/pullRequests/${prId}/iterations`,
     { "api-version": API_VERSION },
   );
-  return response.value?.at(-1)?.id;
+  return response.value?.reduce<number | undefined>((latest, iteration) =>
+    latest === undefined || iteration.id > latest ? iteration.id : latest, undefined);
 }
 
 async function listPrChanges(
@@ -214,11 +262,22 @@ async function listPrChanges(
 ): Promise<AdoPullRequestChange[]> {
   const iterationId = await latestIteration(org, project, repoId, prId);
   if (!iterationId) return [];
-  const response = await client(org, project).get<ValueResponse<AdoPullRequestChange>>(
-    `git/repositories/${encodeURIComponent(repoId)}/pullRequests/${prId}/iterations/${iterationId}/changes`,
-    { "$top": 2000, "api-version": API_VERSION },
-  );
-  return response.value ?? [];
+  const scoped = client(org, project);
+  const changes: AdoPullRequestChange[] = [];
+  let skip = 0;
+  let top = 2000;
+  while (true) {
+    const response = await scoped.get<AdoPullRequestIterationChanges>(
+      `git/repositories/${encodeURIComponent(repoId)}/pullRequests/${prId}/iterations/${iterationId}/changes`,
+      { "$top": top, "$skip": skip, "api-version": API_VERSION },
+    );
+    const { entries: page, nextSkip, nextTop } = normalizeIterationChangePage(response);
+    changes.push(...page);
+    if (nextSkip === undefined || page.length === 0 || nextSkip <= skip) break;
+    skip = nextSkip;
+    top = nextTop ?? top;
+  }
+  return changes;
 }
 
 async function getItemText(
@@ -241,15 +300,16 @@ async function getItemText(
       },
     );
   } catch (error) {
-    if (error instanceof AdoHttpError && [404, 415].includes(error.status)) return null;
+    if (error instanceof AdoHttpError && error.status === 415) return null;
     throw error;
   }
 }
 
-async function mapInBatches<T, R>(items: T[], size: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+async function mapInBatches<T, R>(items: T[], size: number, fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
   const output: R[] = [];
   for (let index = 0; index < items.length; index += size) {
-    output.push(...(await Promise.all(items.slice(index, index + size).map(fn))));
+    const batch = await Promise.all(items.slice(index, index + size).map((item, offset) => fn(item, index + offset)));
+    output.push(...batch);
   }
   return output;
 }
@@ -267,36 +327,33 @@ export async function getPullRequestFiles(
   ]);
   const sourceCommit = pr.sourceCommit;
   const targetCommit = pr.targetCommit;
-  const fileChanges = changes.filter((change) => change.item?.path && !change.item.isFolder);
+  const fileChanges = normalizePullRequestFileChanges(changes);
 
   if (!sourceCommit || !targetCommit) {
-    return fileChanges.map((change) => ({
-      path: change.item?.path ?? "unknown",
-      changeType: change.changeType ?? "edit",
-    }));
+    return fileChanges.map(({ path, previousPath, changeType, size }) => ({ path, previousPath, changeType, size }));
   }
 
-  return mapInBatches(fileChanges, 5, async (change) => {
-    const index = fileChanges.indexOf(change);
-    const path = change.item?.path ?? "unknown";
-    const changeType = change.changeType?.toLowerCase() ?? "edit";
-    if (index >= maxDiffFiles) {
-      return { path, changeType, renderingDeferred: true } satisfies PullRequestFile;
+  return mapInBatches(fileChanges, 5, async ({ path, previousPath, changeType, size }, index) => {
+    if (isInlineDiffDeferred(index, maxDiffFiles)) {
+      return { path, previousPath, changeType, size, renderingDeferred: true } satisfies PullRequestFile;
     }
+    const beforePath = previousPath ?? path;
     const [before, after] = await Promise.all([
-      changeType.includes("add") ? Promise.resolve("") : getItemText(org, project, repoId, path, targetCommit),
+      changeType.includes("add") ? Promise.resolve("") : getItemText(org, project, repoId, beforePath, targetCommit),
       changeType.includes("delete") ? Promise.resolve("") : getItemText(org, project, repoId, path, sourceCommit),
     ]);
 
     if (before === null || after === null) {
-      return { path, changeType, binary: true } satisfies PullRequestFile;
+      return { path, previousPath, changeType, size, binary: true } satisfies PullRequestFile;
     }
     if (before.length + after.length > 400_000) {
-      return { path, changeType, tooLarge: true } satisfies PullRequestFile;
+      return { path, previousPath, changeType, size, tooLarge: true } satisfies PullRequestFile;
     }
     return {
       path,
+      previousPath,
       changeType,
+      size,
       patch: createTwoFilesPatch(`a${path}`, `b${path}`, before, after, targetCommit.slice(0, 8), sourceCommit.slice(0, 8), { context: 4 }),
     } satisfies PullRequestFile;
   });

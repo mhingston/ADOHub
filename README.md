@@ -1,92 +1,75 @@
 # ADOHub
 
-> A GitHub-like developer interface for Azure DevOps, focused on pull requests, pipelines and repository navigation.
+> A GitHub-like developer interface for Azure DevOps pull requests, pipelines and repository navigation.
 
-ADOHub treats Azure DevOps as a backend implementation detail. It keeps Azure DevOps as the source of truth while presenting the developer workflows used every day with GitHub-like information architecture:
-
-```text
-Repository
-├── Code
-├── Pull requests
-├── Actions
-└── Branches
-```
-
-The first milestone is deliberately centred on one benchmark:
+ADOHub keeps Azure DevOps as the source of truth and presents the daily developer flow:
 
 ```text
-PR → checks → failed pipeline → failed step → useful logs
+PR → checks → failed pipeline → failed step → useful log
+PR → review/comment → resolve blockers → complete
 ```
 
-If that flow is not materially easier than Azure DevOps, ADOHub should improve it before broadening scope.
+## Current features
 
-## What is implemented
+- Repository root, default branch and branch browsing.
+- Paginated pull request lists, reviewers, discussion and merge state.
+- Current policy, status and PR-build checks, with old status history collapsed by context.
+- Text file diffs with all changed-file metadata retained; inline diffs are bounded.
+- Pipeline runs, timeline, failed-step-first logs, incremental log polling, cancel and re-run.
+- PR comments, current-user votes, complete, abandon and reactivate actions.
+- A thin Next.js BFF; raw Azure payloads stay in `lib/ado`, and UI components use `lib/domain`.
 
-- Next.js frontend + BFF in one deployment; no separate .NET service.
-- Server-only PAT authentication.
-- GitHub-like repository shell and shareable repository URLs.
-- Repository root browsing and branch listing.
-- Pull request list, PR metadata, reviewers, discussion and merge state.
-- Normalized PR checks from branch policy evaluations, PR statuses and pull-request builds.
-- Files-changed view with bounded server-side unified diff generation for text files.
-- Actions-style recent pipeline run list.
-- Failure-first pipeline run view with stages/jobs/steps collapsed into one timeline.
-- Running pipeline polling plus incremental log polling.
-- Cancel and re-run actions where the Azure Build API supports them.
-- Unit coverage for the normalization layer.
+## Azure DevOps assumptions observed in live data
 
-## Architecture
+The read workflow has been exercised against a real Azure DevOps Git repository with REST API 7.1 responses. Sanitized samples live under `tests/fixtures/ado/`.
 
-```text
-Browser
-  ↓
-Next.js
-├── React UI
-├── Route Handlers / BFF
-└── lib/ado adapter
-      ↓
-Azure DevOps REST API
-```
+- PR states are `active`, `completed` and `abandoned`; draft state is a separate `isDraft` flag. PR detail may omit both `updatedDate` and `_links.web`, so ADOHub does not invent an update timestamp and derives a web link from the repository URL when needed.
+- Reviewer votes use ADO values: `10` approve, `5` approve with suggestions, `0` no vote, `-5` wait for author and `-10` reject/request changes.
+- Iteration changes use `changeEntries` (some captured responses wrap these under `changes`), not a `value` array. A deletion may omit `item.path` and put the removed path in `originalPath`.
+- Policy evaluations are scoped to the project-level PR artifact. Repeated PR status contexts are history; ADOHub keeps the newest timestamp per context. Distinct policy configurations/scopes remain visible.
+- PR-associated builds were observed with both `refs/pull/{id}/merge` and `triggerInfo` values such as `pr.number`. Timeline data has Stage, Phase, Job, Task and Checkpoint records; Phase is folded into Stage → Job → Task, and approval checkpoints remain visible.
+- Build log responses are text and `startLine` is one-based. A trailing newline does not add an extra log line. A queued or approval-blocked run may have no active task log yet.
 
-Raw Azure DevOps response types stay under `lib/ado`. UI code consumes the application types under `lib/domain`.
+Policy evaluations and PR statuses use preview REST versions; those versions are isolated in `lib/ado` and normalized into stable domain types.
 
-The BFF is intentionally thin. It owns credentials, Azure API calls, retry/backoff, error normalization, aggregation and polling-oriented endpoints. It does not blindly mirror Azure DevOps REST URLs.
+Relevant Microsoft REST references: [iteration changes](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-iteration-changes/get?view=azure-devops-rest-7.1), [PR thread creation](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-threads/create?view=azure-devops-rest-7.1), [reviewer votes](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-reviewers/create-pull-request-reviewer?view=azure-devops-rest-7.1), [PR update/completion](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-requests/update?view=azure-devops-rest-7.1), [policy evaluations](https://learn.microsoft.com/en-us/rest/api/azure/devops/policy/evaluations?view=azure-devops-rest-7.1) and [build listing](https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/list?view=azure-devops-rest-7.1).
 
 ## Setup
 
-Requirements:
+Requirements: Node.js 24 or later and an Azure DevOps PAT with the scopes and resource permissions needed for the features you enable.
 
-- Node.js 24+
-- Azure DevOps PAT with the minimum permissions needed for the features you use
-
-Create `.env.local`:
-
-```bash
-cp .env.example .env.local
-```
-
-Then set:
+Set these server-side environment variables (for example, in a local `.env.local`):
 
 ```text
 ADO_PAT=...
-ADO_ORG=optional-default-org
-ADO_PROJECT=optional-default-project
-ADO_REPO=optional-default-repo
+ADO_ORG=your-organization
+ADO_PROJECT=your-project
+ADO_REPO=your-repository
 ADO_MUTATIONS_ENABLED=false
 ```
 
-`ADO_PAT` is only read inside the server-side Azure DevOps adapter. It is never exposed through a `NEXT_PUBLIC_` variable or stored in browser storage.
+Never use `NEXT_PUBLIC_*` for the PAT. The browser receives only ADOHub API responses; it does not call Azure DevOps directly.
 
-For read-only use, grant Code read and Build read. Keep PAT scope as narrow as possible.\n\nPipeline mutations are **disabled by default**. To enable cancel/re-run for the local MVP, set `ADO_MUTATIONS_ENABLED=true` and configure `ADO_ORG`, `ADO_PROJECT` and `ADO_REPO`. Those three values become a strict server-side mutation allowlist; requests outside that repository are rejected before a write is sent to Azure DevOps. Do not enable PAT-backed mutations on a public deployment without adding application authentication. The PAT also needs Build execute permission for writes.
+Suggested minimum PAT scopes:
+
+- Read only: **Code (Read)**, **Build (Read)**, **Project and Team (Read)** and **Profile (Read)** for project resolution and identifying the authenticated reviewer.
+- PR writes: **Code (Read & write)** for comments, votes, completion and PR lifecycle actions.
+- Pipeline cancel/re-run: **Build (Read & execute)**.
+
+Azure DevOps permissions and organization policies can require additional access. Keep scopes and repository permissions as narrow as possible.
+
+Mutations are disabled unless `ADO_MUTATIONS_ENABLED=true`. When enabled, `ADO_ORG`, `ADO_PROJECT` and `ADO_REPO` form a deployment-side allowlist. Each write resolves the configured repository and verifies that the requested PR or build belongs to it before sending the mutation. The browser cannot override this allowlist.
+
+PAT mode is intended for local, single-user or internal development. A shared deployment requires application authentication and authorization. Entra delegated authentication is not included in this slice.
 
 Install and run:
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-Quality checks:
+Validation:
 
 ```bash
 npm run typecheck
@@ -94,7 +77,15 @@ npm test
 npm run build
 ```
 
-## URLs
+## PR operations
+
+- Add a normal discussion comment.
+- Vote: approve (`10`), approve with suggestions (`5`), wait for author (`-5`), request changes/reject (`-10`) or reset (`0`). The current user's review is marked separately.
+- Complete with squash or merge commit. Deleting the source branch is optional and defaults off; linked work items are not transitioned.
+- Abandon or reactivate a pull request after a browser confirmation.
+- Azure remains final authority for policy and merge eligibility. ADOHub shows known blockers and the Azure error returned for a failed completion.
+
+## URL structure
 
 ```text
 /:org/:project/:repo
@@ -106,22 +97,11 @@ npm run build
 /:org/:project/:repo/branches
 ```
 
-## Design constraints
+## Limitations
 
-ADOHub does **not** aim to recreate the whole Azure DevOps product. The MVP intentionally excludes Boards, Wiki, Test Plans, Artifacts, organisation administration, service connections, agent pools, classic Releases and full pipeline authoring.
+- Inline unified diffs are generated for at most 30 files and 400 KB of combined text per file. Every file remains listed. Binary files are not diffed.
+- A true rename was not present in the captured live sample; when ADO supplies both `originalPath` and the new item path, ADOHub preserves both.
+- Pipeline definitions, run parameters, inline diff review threads, viewed-file state, service hooks and Boards/Wiki/Test Plans are out of scope.
+- Polling is used for visible PR/build state; no service hooks are required.
 
-No Azure DevOps Service Hooks are required. Live run state and logs use polling so the application can work in environments where webhook/service-hook configuration is unavailable.
-
-## Current limitations / next slices
-
-The current foundation proves the primary read/troubleshoot flow. The next useful increments are:
-
-1. PR mutations: comment, approve, request changes, complete and abandon.
-2. Better PR-list check summaries without issuing per-PR policy/status fan-out.
-3. Inline diff review threads and viewed-file state.
-4. Pipeline definition list + GitHub-style “Run workflow” parameters.
-5. Retry failed stage/job where the backing Azure API exposes a clean operation.
-6. Entra delegated authentication as an alternative to PAT configuration.
-7. Richer branch metadata such as associated PR, policy summary and ahead/behind.
-
-When an Azure feature cannot be represented cleanly, prefer a direct link back to Azure DevOps over a misleading partial clone.
+When ADOHub cannot represent an Azure DevOps feature clearly, it links back to Azure DevOps instead of displaying a misleading approximation.

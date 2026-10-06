@@ -1,0 +1,173 @@
+{
+  "samples": [
+    {
+      "sourcePullRequestId": 42,
+      "reviewers": [
+        {
+          "reviewerUrl": "https://example.invalid/ado/resource",
+          "vote": 10,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "displayName": "ADO Identity 12",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "ace1fd94-53b1-4216-85ba-05b174349b21",
+          "uniqueName": "ado-identity-12@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource"
+        },
+        {
+          "reviewerUrl": "https://example.invalid/ado/resource",
+          "vote": 10,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "displayName": "ADO Identity 13",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "a9c1d582-e631-40df-8215-48b4fb924c58",
+          "uniqueName": "ado-identity-13@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource"
+        },
+        {
+          "reviewerUrl": "https://example.invalid/ado/resource",
+          "vote": 10,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "displayName": "ADO Identity 14",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "de037083-76db-4fcb-881a-f280bfd970a9",
+          "uniqueName": "ado-identity-14@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource"
+        },
+        {
+          "reviewerUrl": "https://example.invalid/ado/resource",
+          "vote": 10,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "displayName": "ADO Identity 3",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "c67f2fc3-91b6-4892-9fa4-7eccbc9e5838",
+          "uniqueName": "ado-identity-3@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource"
+        }
+      ]
+    },
+    {
+      "sourcePullRequestId": 42,
+      "reviewers": [
+        {
+          "reviewerUrl": "https://example.invalid/ado/resource",
+          "vote": 10,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "displayName": "ADO Identity 14",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "de037083-76db-4fcb-881a-f280bfd970a9",
+          "uniqueName": "ado-identity-14@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource"
+        },
+        {
+          "reviewerUrl": "https://example.invalid/ado/resource",
+          "vote": 0,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "displayName": "ADO Identity 15",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "fee2ca93-bfe1-4f0d-ac03-67dcbb702d83",
+          "uniqueName": "ado-identity-15@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource"
+        }
+      ]
+    },
+    {
+      "sourcePullRequestId": 42,
+      "reviewers": [
+        {
+          "reviewerUrl": "https://example.invalid/ado/resource",
+          "vote": 5,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "displayName": "ADO Identity 13",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "a9c1d582-e631-40df-8215-48b4fb924c58",
+          "uniqueName": "ado-identity-13@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource"
+        }
+      ]
+    },
+    {
+      "sourcePullRequestId": 42,
+      "reviewers": [
+        {
+          "reviewerUrl": "https://example.invalid/ado/resource",
+          "vote": 10,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "displayName": "ADO Identity 3",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "c67f2fc3-91b6-4892-9fa4-7eccbc9e5838",
+          "uniqueName": "ado-identity-3@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource"
+        }
+      ]
+    },
+    {
+      "sourcePullRequestId": 42,
+      "reviewers": [
+        {
+          "reviewerUrl": "https://example.invalid/ado/resource",
+          "vote": -10,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "displayName": "ADO Identity 3",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "c67f2fc3-91b6-4892-9fa4-7eccbc9e5838",
+          "uniqueName": "ado-identity-3@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource"
+        }
+      ]
+    }
+  ]
+}

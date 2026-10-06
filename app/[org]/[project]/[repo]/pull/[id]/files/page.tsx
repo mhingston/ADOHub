@@ -20,7 +20,7 @@ export default async function FilesPage({ params }: { params: Promise<{ org: str
       <div className="page-heading"><h1>Files changed</h1><Link href={`${base}/pull/${prId}`}>← Conversation</Link></div>
       {files.length === 0 ? <div className="empty-state">No changed files found.</div> : files.map((file) => (
         <section className="diff-card" key={file.path}>
-          <div className="diff-header"><strong>{file.path}</strong><span className="muted">{file.changeType}</span></div>
+          <div className="diff-header"><strong>{file.path}{file.previousPath ? <span className="muted small"> (renamed from {file.previousPath})</span> : null}</strong><span className="muted">{file.changeType}{file.size !== undefined ? ` · ${file.size.toLocaleString()} bytes` : ""}</span></div>
           {file.binary ? <div className="empty-state">Binary or unavailable content; diff cannot be rendered safely.</div> : file.tooLarge ? <div className="empty-state">File is too large for the inline MVP diff.</div> : file.renderingDeferred ? <div className="empty-state">Inline diff omitted after the first 30 files; the file remains listed.</div> : file.patch ? <pre className="diff-view">{renderPatch(file.patch)}</pre> : <div className="empty-state">Diff content unavailable.</div>}
         </section>
       ))}

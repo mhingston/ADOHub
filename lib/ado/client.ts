@@ -46,12 +46,24 @@ export class AzureDevOpsClient {
     return this.request<string>("GET", resource, query, undefined, "text");
   }
 
+  async getTextWithContentType(resource: string, query: Record<string, QueryValue> = {}): Promise<{ text: string; contentType?: string }> {
+    return this.request<{ text: string; contentType?: string }>("GET", resource, query, undefined, "text", true);
+  }
+
   async post<T>(
     resource: string,
     body?: unknown,
     query: Record<string, QueryValue> = {},
   ): Promise<T> {
     return this.request<T>("POST", resource, query, body);
+  }
+
+  async put<T>(
+    resource: string,
+    body?: unknown,
+    query: Record<string, QueryValue> = {},
+  ): Promise<T> {
+    return this.request<T>("PUT", resource, query, body);
   }
 
   async patch<T>(
@@ -80,11 +92,12 @@ export class AzureDevOpsClient {
   }
 
   private async request<T>(
-    method: "GET" | "POST" | "PATCH",
+    method: "GET" | "POST" | "PUT" | "PATCH",
     resource: string,
     query: Record<string, QueryValue>,
     body?: unknown,
     responseType: "json" | "text" = "json",
+    includeContentType = false,
   ): Promise<T> {
     const url = this.buildUrl(resource, query);
     const retryable = new Set([429, 502, 503, 504]);
@@ -103,12 +116,19 @@ export class AzureDevOpsClient {
 
       if (response.ok) {
         if (response.status === 204) return undefined as T;
-        if (responseType === "text") return (await response.text()) as T;
+        if (responseType === "text") {
+          const text = await response.text();
+          return (includeContentType
+            ? { text, contentType: response.headers.get("content-type") ?? undefined }
+            : text) as T;
+        }
         return (await response.json()) as T;
       }
 
       const errorBody = await response.text();
-      if (!retryable.has(response.status) || attempt === 2) {
+      // A retried POST/PUT/PATCH can repeat a comment or workflow mutation if
+      // Azure completed the first request but the response was lost.
+      if (method !== "GET" || !retryable.has(response.status) || attempt === 2) {
         throw new AdoHttpError(
           `Azure DevOps request failed (${response.status})`,
           response.status,

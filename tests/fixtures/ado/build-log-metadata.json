@@ -1,0 +1,29 @@
+{
+  "count": 219,
+  "value": [
+    {
+      "lineCount": 55,
+      "createdOn": "Sanitized text.",
+      "lastChangedOn": "Sanitized text.",
+      "id": 167,
+      "type": "Container",
+      "url": "https://example.invalid/ado/resource"
+    },
+    {
+      "lineCount": 91,
+      "createdOn": "Sanitized text.",
+      "lastChangedOn": "Sanitized text.",
+      "id": 202,
+      "type": "Container",
+      "url": "https://example.invalid/ado/resource"
+    },
+    {
+      "lineCount": 2638,
+      "createdOn": "Sanitized text.",
+      "lastChangedOn": "Sanitized text.",
+      "id": 219,
+      "type": "Container",
+      "url": "https://example.invalid/ado/resource"
+    }
+  ]
+}

@@ -7,11 +7,11 @@ export function CheckList({ checks, runHref }: { checks: Check[]; runHref?: (run
   return (
     <div className="list-card">
       {checks.map((check) => (
-        <div className="list-row" key={check.id}>
+        <div className={`list-row check-row ${check.required ? "check-required" : ""} ${check.status === "failure" ? "check-failed" : ""}`} key={check.id}>
           <div className="grow">
             <Status status={check.status} />
             <strong>{check.name}</strong>
-            {check.required ? <span className="muted"> · required</span> : null}
+            {check.required ? <span className="required-badge">Required</span> : null}
             {check.description ? <div className="muted small">{check.description}</div> : null}
           </div>
           {check.runId && runHref ? <Link href={runHref(check.runId)}>View run</Link> : check.detailsUrl ? <a href={check.detailsUrl}>Details</a> : null}

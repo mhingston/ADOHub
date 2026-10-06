@@ -1,5 +1,5 @@
 import { AzureDevOpsClient } from "@/lib/ado/client";
-import type { AdoBuild } from "@/lib/ado/types";
+import type { AdoBuild, AdoPullRequest, AdoRepository } from "@/lib/ado/types";
 
 const API_VERSION = "7.1";
 
@@ -10,17 +10,28 @@ export class MutationAccessError extends Error {
   }
 }
 
-function same(left: string, right: string) {
-  return left.localeCompare(right, undefined, { sensitivity: "accent" }) === 0;
+export type MutationResource =
+  | { kind: "pullRequest"; id: number }
+  | { kind: "build"; id: string };
+
+export interface MutationTarget {
+  org: string;
+  project: string;
+  repo: string;
+  resource: MutationResource;
 }
 
-export async function assertMutationAllowed(
-  org: string,
-  project: string,
-  runId: string,
-): Promise<void> {
+function same(left: string, right: string) {
+  return left.trim().toLocaleLowerCase("en-US") === right.trim().toLocaleLowerCase("en-US");
+}
+
+/**
+ * Deployment-side allowlist plus an Azure read that proves the resource still
+ * belongs to the configured repository before any write is sent.
+ */
+export async function assertMutationAllowed({ org, project, repo, resource }: MutationTarget): Promise<string> {
   if (process.env.ADO_MUTATIONS_ENABLED !== "true") {
-    throw new MutationAccessError("Pipeline mutations are disabled for this ADOHub deployment.", 403);
+    throw new MutationAccessError("Mutations are disabled for this ADOHub deployment.", 403);
   }
 
   const allowedOrg = process.env.ADO_ORG?.trim();
@@ -28,21 +39,38 @@ export async function assertMutationAllowed(
   const allowedRepo = process.env.ADO_REPO?.trim();
   if (!allowedOrg || !allowedProject || !allowedRepo) {
     throw new MutationAccessError(
-      "Pipeline mutations require ADO_ORG, ADO_PROJECT and ADO_REPO deployment allowlists.",
+      "Mutations require ADO_ORG, ADO_PROJECT and ADO_REPO deployment allowlists.",
       503,
     );
   }
-
-  if (!same(org, allowedOrg) || !same(project, allowedProject)) {
-    throw new MutationAccessError("This Azure DevOps organisation/project is not mutation-allowed.", 403);
+  if (!same(org, allowedOrg) || !same(project, allowedProject) || !same(repo, allowedRepo)) {
+    throw new MutationAccessError("This Azure DevOps repository is not mutation-allowed.", 403);
   }
 
-  const build = await new AzureDevOpsClient({ org, project }).get<AdoBuild>(
-    `build/builds/${encodeURIComponent(runId)}`,
-    { "api-version": API_VERSION },
-  );
-  const repository = build.repository;
-  if (!repository || (!same(repository.id ?? "", allowedRepo) && !same(repository.name ?? "", allowedRepo))) {
+  const scoped = new AzureDevOpsClient({ org, project });
+  const repository = await scoped.get<AdoRepository>(`git/repositories/${encodeURIComponent(allowedRepo)}`, {
+    "api-version": API_VERSION,
+  });
+  if (!same(repository.name, allowedRepo) || !repository.id) {
+    throw new MutationAccessError("The allowlisted repository could not be verified.", 403);
+  }
+
+  if (resource.kind === "pullRequest") {
+    const pullRequest = await scoped.get<AdoPullRequest>(
+      `git/repositories/${encodeURIComponent(repository.id)}/pullrequests/${resource.id}`,
+      { "api-version": API_VERSION },
+    );
+    if (!pullRequest.repository?.id || !same(pullRequest.repository.id, repository.id)) {
+      throw new MutationAccessError("This pull request does not belong to the mutation-allowed repository.", 403);
+    }
+    return repository.id;
+  }
+
+  const build = await scoped.get<AdoBuild>(`build/builds/${encodeURIComponent(resource.id)}`, {
+    "api-version": API_VERSION,
+  });
+  if (!build.repository?.id || !same(build.repository.id, repository.id)) {
     throw new MutationAccessError("This build does not belong to the mutation-allowed repository.", 403);
   }
+  return repository.id;
 }

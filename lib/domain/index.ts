@@ -65,8 +65,9 @@ export interface PullRequestSummary {
   isDraft: boolean;
   status: "open" | "completed" | "abandoned";
   reviewers: Review[];
-  updatedAt: string;
   createdAt: string;
+  closedAt?: string;
+  updatedAt?: string;
   webUrl?: string;
   sourceCommit?: string;
   targetCommit?: string;
@@ -90,7 +91,9 @@ export interface PullRequestDetail extends PullRequestSummary {
 
 export interface PullRequestFile {
   path: string;
+  previousPath?: string;
   changeType: string;
+  size?: number;
   patch?: string;
   binary?: boolean;
   tooLarge?: boolean;
@@ -115,7 +118,7 @@ export interface WorkflowRun {
   definitionId?: number;
 }
 
-export type TimelineKind = "stage" | "job" | "step";
+export type TimelineKind = "stage" | "job" | "step" | "approval";
 
 export interface TimelineItem {
   id: string;

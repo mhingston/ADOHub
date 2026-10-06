@@ -33,7 +33,7 @@ export default async function PullsPage({
             <div className="pr-icon">◇</div>
             <div className="grow">
               <div className="pr-title"><Link href={`${base}/pull/${pr.id}`}>{pr.title}</Link> <span className="muted">#{pr.id}</span> {pr.isDraft ? <span className="draft-badge">Draft</span> : null}</div>
-              <div className="muted small">{pr.author} wants to merge <strong>{pr.sourceBranch}</strong> → <strong>{pr.targetBranch}</strong> · {new Date(pr.updatedAt).toLocaleString()}</div>
+              <div className="muted small">{pr.author} wants to merge <strong>{pr.sourceBranch}</strong> → <strong>{pr.targetBranch}</strong> · {pr.updatedAt ? `updated ${new Date(pr.updatedAt).toLocaleString()}` : pr.closedAt ? `closed ${new Date(pr.closedAt).toLocaleString()}` : `opened ${new Date(pr.createdAt).toLocaleString()}`}</div>
               <div className="review-line">{pr.reviewers.filter((review) => review.state !== "none").slice(0, 4).map((review) => <ReviewBadge key={review.id} state={review.state} />)}</div>
             </div>
           </div>

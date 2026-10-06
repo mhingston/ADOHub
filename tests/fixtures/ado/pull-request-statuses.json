@@ -1,0 +1,202 @@
+{
+  "value": [
+    {
+      "iterationId": 1,
+      "id": 1,
+      "description": "Sanitized text.",
+      "context": {
+        "name": "Sample name",
+        "genre": "Sanitized text."
+      },
+      "creationDate": "2026-10-02T12:31:42.5598728Z",
+      "updatedDate": "2026-10-02T12:31:42.5598728Z",
+      "createdBy": {
+        "displayName": "ADO Identity 6",
+        "url": "https://example.invalid/ado/resource",
+        "_links": {
+          "avatar": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "id": "f36ddb31-32f1-4024-97fc-a8b8b18b9e32",
+        "uniqueName": "ado-identity-6@example.invalid",
+        "imageUrl": "https://example.invalid/ado/resource",
+        "descriptor": "descriptor-ea20bf1f5c5e"
+      }
+    },
+    {
+      "iterationId": 2,
+      "id": 2,
+      "description": "Sanitized text.",
+      "context": {
+        "name": "Sample name",
+        "genre": "Sanitized text."
+      },
+      "creationDate": "2026-10-02T12:40:12.904751Z",
+      "updatedDate": "2026-10-02T12:40:12.904751Z",
+      "createdBy": {
+        "displayName": "ADO Identity 6",
+        "url": "https://example.invalid/ado/resource",
+        "_links": {
+          "avatar": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "id": "f36ddb31-32f1-4024-97fc-a8b8b18b9e32",
+        "uniqueName": "ado-identity-6@example.invalid",
+        "imageUrl": "https://example.invalid/ado/resource",
+        "descriptor": "descriptor-ea20bf1f5c5e"
+      }
+    },
+    {
+      "iterationId": 1,
+      "id": 3,
+      "state": "failed",
+      "description": "Sanitized text.",
+      "context": {
+        "name": "Sample name",
+        "genre": "Sanitized text."
+      },
+      "creationDate": "2026-10-02T12:40:20.3039435Z",
+      "updatedDate": "2026-10-02T12:40:20.3039435Z",
+      "createdBy": {
+        "displayName": "ADO Identity 6",
+        "url": "https://example.invalid/ado/resource",
+        "_links": {
+          "avatar": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "id": "f36ddb31-32f1-4024-97fc-a8b8b18b9e32",
+        "uniqueName": "ado-identity-6@example.invalid",
+        "imageUrl": "https://example.invalid/ado/resource",
+        "descriptor": "descriptor-ea20bf1f5c5e"
+      }
+    },
+    {
+      "iterationId": 2,
+      "id": 4,
+      "state": "pending",
+      "description": "Sanitized text.",
+      "context": {
+        "name": "Sample name",
+        "genre": "Sanitized text."
+      },
+      "creationDate": "2026-10-02T13:06:24.48771Z",
+      "updatedDate": "2026-10-02T13:06:24.48771Z",
+      "createdBy": {
+        "displayName": "ADO Identity 6",
+        "url": "https://example.invalid/ado/resource",
+        "_links": {
+          "avatar": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "id": "f36ddb31-32f1-4024-97fc-a8b8b18b9e32",
+        "uniqueName": "ado-identity-6@example.invalid",
+        "imageUrl": "https://example.invalid/ado/resource",
+        "descriptor": "descriptor-ea20bf1f5c5e"
+      }
+    },
+    {
+      "iterationId": 2,
+      "id": 5,
+      "state": "succeeded",
+      "description": "Sanitized text.",
+      "context": {
+        "name": "Sample name",
+        "genre": "Sanitized text."
+      },
+      "creationDate": "2026-10-02T13:06:37.3421977Z",
+      "updatedDate": "2026-10-02T13:06:37.3421977Z",
+      "createdBy": {
+        "displayName": "ADO Identity 6",
+        "url": "https://example.invalid/ado/resource",
+        "_links": {
+          "avatar": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "id": "f36ddb31-32f1-4024-97fc-a8b8b18b9e32",
+        "uniqueName": "ado-identity-6@example.invalid",
+        "imageUrl": "https://example.invalid/ado/resource",
+        "descriptor": "descriptor-ea20bf1f5c5e"
+      }
+    },
+    {
+      "iterationId": 3,
+      "id": 6,
+      "description": "Sanitized text.",
+      "context": {
+        "name": "Sample name",
+        "genre": "Sanitized text."
+      },
+      "creationDate": "2026-10-05T08:14:56.049298Z",
+      "updatedDate": "2026-10-05T08:14:56.049298Z",
+      "createdBy": {
+        "displayName": "ADO Identity 6",
+        "url": "https://example.invalid/ado/resource",
+        "_links": {
+          "avatar": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "id": "f36ddb31-32f1-4024-97fc-a8b8b18b9e32",
+        "uniqueName": "ado-identity-6@example.invalid",
+        "imageUrl": "https://example.invalid/ado/resource",
+        "descriptor": "descriptor-ea20bf1f5c5e"
+      }
+    },
+    {
+      "iterationId": 3,
+      "id": 7,
+      "state": "pending",
+      "description": "Sanitized text.",
+      "context": {
+        "name": "Sample name",
+        "genre": "Sanitized text."
+      },
+      "creationDate": "2026-10-05T08:26:38.5076081Z",
+      "updatedDate": "2026-10-05T08:26:38.5076081Z",
+      "createdBy": {
+        "displayName": "ADO Identity 6",
+        "url": "https://example.invalid/ado/resource",
+        "_links": {
+          "avatar": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "id": "f36ddb31-32f1-4024-97fc-a8b8b18b9e32",
+        "uniqueName": "ado-identity-6@example.invalid",
+        "imageUrl": "https://example.invalid/ado/resource",
+        "descriptor": "descriptor-ea20bf1f5c5e"
+      }
+    },
+    {
+      "iterationId": 3,
+      "id": 8,
+      "state": "succeeded",
+      "description": "Sanitized text.",
+      "context": {
+        "name": "Sample name",
+        "genre": "Sanitized text."
+      },
+      "creationDate": "2026-10-05T08:26:51.7944189Z",
+      "updatedDate": "2026-10-05T08:26:51.7944189Z",
+      "createdBy": {
+        "displayName": "ADO Identity 6",
+        "url": "https://example.invalid/ado/resource",
+        "_links": {
+          "avatar": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "id": "f36ddb31-32f1-4024-97fc-a8b8b18b9e32",
+        "uniqueName": "ado-identity-6@example.invalid",
+        "imageUrl": "https://example.invalid/ado/resource",
+        "descriptor": "descriptor-ea20bf1f5c5e"
+      }
+    }
+  ],
+  "count": 8
+}
