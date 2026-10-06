@@ -1,0 +1,281 @@
+{
+  "value": [
+    {
+      "pullRequestThreadContext": null,
+      "id": 360219,
+      "publishedDate": "2026-10-02T12:40:05.37Z",
+      "lastUpdatedDate": "2026-10-02T12:40:05.37Z",
+      "comments": [
+        {
+          "id": 1,
+          "parentCommentId": 0,
+          "author": {
+            "displayName": "ADO Identity 5",
+            "url": "https://example.invalid/ado/resource",
+            "_links": {
+              "avatar": {
+                "href": "https://example.invalid/ado/resource"
+              }
+            },
+            "id": "9002fa25-29ae-44cc-9ca9-0b20bfcc8d03",
+            "uniqueName": "ado-identity-5@example.invalid",
+            "imageUrl": "https://example.invalid/ado/resource",
+            "descriptor": "descriptor-ea20bf1f5c5e"
+          },
+          "content": "Sanitized text.",
+          "publishedDate": "2026-10-02T12:40:05.37Z",
+          "lastUpdatedDate": "2026-10-02T12:40:05.37Z",
+          "lastContentUpdatedDate": "2026-10-02T12:40:05.37Z",
+          "commentType": "Sanitized text",
+          "usersLiked": [],
+          "_links": {
+            "self": {
+              "href": "https://example.invalid/ado/resource"
+            },
+            "repository": {
+              "href": "https://example.invalid/ado/resource"
+            },
+            "threads": {
+              "href": "https://example.invalid/ado/resource"
+            },
+            "pullRequests": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          }
+        }
+      ],
+      "threadContext": null,
+      "properties": {
+        "CodeReviewThreadType": {
+          "$type": "Sanitized text.",
+          "$value": "Sanitized text."
+        },
+        "CodeReviewRefName": {
+          "$type": "Sanitized text.",
+          "$value": "Sanitized text."
+        },
+        "CodeReviewRefNewCommits": {
+          "$type": "Sanitized text.",
+          "$value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "CodeReviewRefNewCommitsCount": {
+          "$type": "Sanitized text.",
+          "$value": 1
+        },
+        "CodeReviewRefNewHeadCommit": {
+          "$type": "Sanitized text.",
+          "$value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "CodeReviewRefUpdatedByIdentity": {
+          "$type": "Sanitized text.",
+          "$value": "Sanitized text."
+        }
+      },
+      "identities": {
+        "1": {
+          "displayName": "ADO Identity 3",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "c67f2fc3-91b6-4892-9fa4-7eccbc9e5838",
+          "uniqueName": "ado-identity-3@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource",
+          "descriptor": "descriptor-ea20bf1f5c5e"
+        }
+      },
+      "isDeleted": false,
+      "_links": {
+        "self": {
+          "href": "https://example.invalid/ado/resource"
+        },
+        "repository": {
+          "href": "https://example.invalid/ado/resource"
+        }
+      }
+    },
+    {
+      "pullRequestThreadContext": null,
+      "id": 360913,
+      "publishedDate": "2026-10-05T08:14:48.213Z",
+      "lastUpdatedDate": "2026-10-05T08:14:48.213Z",
+      "comments": [
+        {
+          "id": 1,
+          "parentCommentId": 0,
+          "author": {
+            "displayName": "ADO Identity 5",
+            "url": "https://example.invalid/ado/resource",
+            "_links": {
+              "avatar": {
+                "href": "https://example.invalid/ado/resource"
+              }
+            },
+            "id": "9002fa25-29ae-44cc-9ca9-0b20bfcc8d03",
+            "uniqueName": "ado-identity-5@example.invalid",
+            "imageUrl": "https://example.invalid/ado/resource",
+            "descriptor": "descriptor-ea20bf1f5c5e"
+          },
+          "content": "Sanitized text.",
+          "publishedDate": "2026-10-05T08:14:48.213Z",
+          "lastUpdatedDate": "2026-10-05T08:14:48.213Z",
+          "lastContentUpdatedDate": "2026-10-05T08:14:48.213Z",
+          "commentType": "Sanitized text",
+          "usersLiked": [],
+          "_links": {
+            "self": {
+              "href": "https://example.invalid/ado/resource"
+            },
+            "repository": {
+              "href": "https://example.invalid/ado/resource"
+            },
+            "threads": {
+              "href": "https://example.invalid/ado/resource"
+            },
+            "pullRequests": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          }
+        }
+      ],
+      "threadContext": null,
+      "properties": {
+        "CodeReviewThreadType": {
+          "$type": "Sanitized text.",
+          "$value": "Sanitized text."
+        },
+        "CodeReviewRefName": {
+          "$type": "Sanitized text.",
+          "$value": "Sanitized text."
+        },
+        "CodeReviewRefNewCommits": {
+          "$type": "Sanitized text.",
+          "$value": "Sanitized text."
+        },
+        "CodeReviewRefNewCommitsCount": {
+          "$type": "Sanitized text.",
+          "$value": 2
+        },
+        "CodeReviewRefNewHeadCommit": {
+          "$type": "Sanitized text.",
+          "$value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "CodeReviewRefUpdatedByIdentity": {
+          "$type": "Sanitized text.",
+          "$value": "Sanitized text."
+        }
+      },
+      "identities": {
+        "1": {
+          "displayName": "ADO Identity 3",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "c67f2fc3-91b6-4892-9fa4-7eccbc9e5838",
+          "uniqueName": "ado-identity-3@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource",
+          "descriptor": "descriptor-ea20bf1f5c5e"
+        }
+      },
+      "isDeleted": false,
+      "_links": {
+        "self": {
+          "href": "https://example.invalid/ado/resource"
+        },
+        "repository": {
+          "href": "https://example.invalid/ado/resource"
+        }
+      }
+    },
+    {
+      "pullRequestThreadContext": null,
+      "id": 360957,
+      "publishedDate": "2026-10-05T08:47:31.867Z",
+      "lastUpdatedDate": "2026-10-05T08:47:31.867Z",
+      "comments": [
+        {
+          "id": 1,
+          "parentCommentId": 0,
+          "author": {
+            "displayName": "ADO Identity 5",
+            "url": "https://example.invalid/ado/resource",
+            "_links": {
+              "avatar": {
+                "href": "https://example.invalid/ado/resource"
+              }
+            },
+            "id": "9002fa25-29ae-44cc-9ca9-0b20bfcc8d03",
+            "uniqueName": "ado-identity-5@example.invalid",
+            "imageUrl": "https://example.invalid/ado/resource",
+            "descriptor": "descriptor-ea20bf1f5c5e"
+          },
+          "content": "Sanitized text.",
+          "publishedDate": "2026-10-05T08:47:31.867Z",
+          "lastUpdatedDate": "2026-10-05T08:47:31.867Z",
+          "lastContentUpdatedDate": "2026-10-05T08:47:31.867Z",
+          "commentType": "Sanitized text",
+          "usersLiked": [],
+          "_links": {
+            "self": {
+              "href": "https://example.invalid/ado/resource"
+            },
+            "repository": {
+              "href": "https://example.invalid/ado/resource"
+            },
+            "threads": {
+              "href": "https://example.invalid/ado/resource"
+            },
+            "pullRequests": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          }
+        }
+      ],
+      "threadContext": null,
+      "properties": {
+        "CodeReviewThreadType": {
+          "$type": "Sanitized text.",
+          "$value": "Sanitized text."
+        },
+        "CodeReviewAutoCompleteNowSet": {
+          "$type": "Sanitized text.",
+          "$value": "Sanitized text."
+        },
+        "CodeReviewAutoCompleteUpdatedByIdentity": {
+          "$type": "Sanitized text.",
+          "$value": "Sanitized text."
+        }
+      },
+      "identities": {
+        "1": {
+          "displayName": "ADO Identity 3",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "c67f2fc3-91b6-4892-9fa4-7eccbc9e5838",
+          "uniqueName": "ado-identity-3@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource",
+          "descriptor": "descriptor-ea20bf1f5c5e"
+        }
+      },
+      "isDeleted": false,
+      "_links": {
+        "self": {
+          "href": "https://example.invalid/ado/resource"
+        },
+        "repository": {
+          "href": "https://example.invalid/ado/resource"
+        }
+      }
+    }
+  ],
+  "count": 3
+}

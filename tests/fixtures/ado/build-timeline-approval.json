@@ -1,0 +1,32 @@
+{
+  "records": [
+    {
+      "id": "record-1",
+      "parentId": null,
+      "type": "Stage",
+      "name": "Approval stage",
+      "order": 7,
+      "state": "pending",
+      "result": null,
+      "log": null
+    },
+    {
+      "id": "record-2",
+      "parentId": "record-1",
+      "type": "Checkpoint",
+      "name": "Approval checkpoint",
+      "state": "inProgress",
+      "result": null,
+      "log": null
+    },
+    {
+      "id": "record-3",
+      "parentId": "record-2",
+      "type": "Checkpoint.Approval",
+      "name": "Manual approval",
+      "state": "inProgress",
+      "result": null,
+      "log": null
+    }
+  ]
+}

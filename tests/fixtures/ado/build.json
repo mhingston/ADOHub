@@ -1,0 +1,150 @@
+{
+  "_links": {
+    "self": {
+      "href": "https://example.invalid/ado/resource"
+    },
+    "web": {
+      "href": "https://example.invalid/ado/resource"
+    },
+    "sourceVersionDisplayUri": {
+      "href": "https://example.invalid/ado/resource"
+    },
+    "timeline": {
+      "href": "https://example.invalid/ado/resource"
+    },
+    "badge": {
+      "href": "https://example.invalid/ado/resource"
+    }
+  },
+  "properties": {},
+  "tags": [],
+  "validationResults": [],
+  "plans": [
+    {
+      "planId": "00000000-0000-0000-0000-000000000025"
+    }
+  ],
+  "templateParameters": {
+    "envs": "Sanitized text.",
+    "build_targets": "Sanitized text."
+  },
+  "triggerInfo": {
+    "ci.sourceBranch": "refs/heads/main",
+    "ci.sourceSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "ci.message": "Sanitized text.",
+    "ci.triggerRepository": "00000000-0000-0000-0000-000000000001"
+  },
+  "id": 9001,
+  "buildNumber": "2026.42",
+  "status": "completed",
+  "result": "failed",
+  "queueTime": "2026-10-05T13:28:48.7511892Z",
+  "startTime": "2026-10-05T13:33:50.498139Z",
+  "finishTime": "2026-10-05T14:13:16.6763817Z",
+  "url": "https://example.invalid/ado/resource",
+  "definition": {
+    "drafts": [],
+    "id": 2113,
+    "name": "Sample name",
+    "url": "https://example.invalid/ado/resource",
+    "uri": "Sanitized text.",
+    "path": "/sample/file-001.txt",
+    "type": "Sanitized text",
+    "queueStatus": "Sanitized text.",
+    "revision": 1,
+    "project": {
+      "id": "90d5b0a2-6955-472e-bda6-1cd86cef90ec",
+      "name": "Sample name",
+      "description": "Sanitized text.",
+      "url": "https://example.invalid/ado/resource",
+      "state": "Sanitized text",
+      "revision": 370,
+      "visibility": "Sanitized text",
+      "lastUpdateTime": "2024-10-03T08:23:56.087Z"
+    }
+  },
+  "buildNumberRevision": 9,
+  "project": {
+    "id": "90d5b0a2-6955-472e-bda6-1cd86cef90ec",
+    "name": "Sample name",
+    "description": "Sanitized text.",
+    "url": "https://example.invalid/ado/resource",
+    "state": "Sanitized text",
+    "revision": 370,
+    "visibility": "Sanitized text",
+    "lastUpdateTime": "2024-10-03T08:23:56.087Z"
+  },
+  "uri": "Sanitized text.",
+  "sourceBranch": "refs/heads/main",
+  "sourceVersion": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "queue": {
+    "id": 298,
+    "name": "Sample name",
+    "pool": {
+      "id": 8,
+      "name": "Sample name",
+      "isHosted": true
+    }
+  },
+  "priority": "Sanitized text.",
+  "reason": "individualCI",
+  "requestedFor": {
+    "displayName": "ADO Identity 3",
+    "url": "https://example.invalid/ado/resource",
+    "_links": {
+      "avatar": {
+        "href": "https://example.invalid/ado/resource"
+      }
+    },
+    "id": "c67f2fc3-91b6-4892-9fa4-7eccbc9e5838",
+    "uniqueName": "ado-identity-3@example.invalid",
+    "imageUrl": "https://example.invalid/ado/resource",
+    "descriptor": "descriptor-ea20bf1f5c5e"
+  },
+  "requestedBy": {
+    "displayName": "ADO Identity 5",
+    "url": "https://example.invalid/ado/resource",
+    "_links": {
+      "avatar": {
+        "href": "https://example.invalid/ado/resource"
+      }
+    },
+    "id": "9002fa25-29ae-44cc-9ca9-0b20bfcc8d03",
+    "uniqueName": "ado-identity-5@example.invalid",
+    "imageUrl": "https://example.invalid/ado/resource",
+    "descriptor": "descriptor-ea20bf1f5c5e"
+  },
+  "lastChangedDate": "2026-10-05T14:13:16.853Z",
+  "lastChangedBy": {
+    "displayName": "ADO Identity 5",
+    "url": "https://example.invalid/ado/resource",
+    "_links": {
+      "avatar": {
+        "href": "https://example.invalid/ado/resource"
+      }
+    },
+    "id": "9002fa25-29ae-44cc-9ca9-0b20bfcc8d03",
+    "uniqueName": "ado-identity-5@example.invalid",
+    "imageUrl": "https://example.invalid/ado/resource",
+    "descriptor": "descriptor-ea20bf1f5c5e"
+  },
+  "orchestrationPlan": {
+    "planId": "00000000-0000-0000-0000-000000000025"
+  },
+  "logs": {
+    "id": 0,
+    "type": "Container",
+    "url": "https://example.invalid/ado/resource"
+  },
+  "repository": {
+    "id": "7ac1b8d7-010b-46cd-ba3e-84e7f90136b8",
+    "type": "TfsGit",
+    "name": "Sample repository",
+    "url": "https://example.invalid/ado/resource",
+    "clean": null,
+    "checkoutSubmodules": false
+  },
+  "retainedByRelease": false,
+  "triggeredByBuild": null,
+  "appendCommitMessageToRunName": true
+}

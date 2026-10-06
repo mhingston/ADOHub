@@ -25,12 +25,27 @@ export interface Repository {
   projectId?: string;
 }
 
+export interface ProjectSummary {
+  id: string;
+  name: string;
+  description?: string;
+  visibility?: string;
+}
+
 export interface RepositoryItem {
   path: string;
   name: string;
   isFolder: boolean;
   commitId?: string;
   size?: number;
+}
+
+export interface RepositoryFileContent {
+  path: string;
+  branch: string;
+  content?: string;
+  binary?: boolean;
+  tooLarge?: boolean;
 }
 
 export interface Branch {
@@ -65,8 +80,9 @@ export interface PullRequestSummary {
   isDraft: boolean;
   status: "open" | "completed" | "abandoned";
   reviewers: Review[];
-  updatedAt: string;
   createdAt: string;
+  closedAt?: string;
+  updatedAt?: string;
   webUrl?: string;
   sourceCommit?: string;
   targetCommit?: string;
@@ -82,6 +98,17 @@ export interface PullRequestComment {
   status?: string;
 }
 
+export interface PullRequestInlineComment {
+  threadId: number;
+  commentId: number;
+  author: string;
+  content: string;
+  publishedAt?: string;
+  status?: string;
+  lineNumber: number;
+  side: "old" | "new";
+}
+
 export interface PullRequestDetail extends PullRequestSummary {
   comments: PullRequestComment[];
   checks: Check[];
@@ -90,8 +117,12 @@ export interface PullRequestDetail extends PullRequestSummary {
 
 export interface PullRequestFile {
   path: string;
+  previousPath?: string;
   changeType: string;
-  patch?: string;
+  size?: number;
+  beforeContent?: string;
+  afterContent?: string;
+  inlineComments?: PullRequestInlineComment[];
   binary?: boolean;
   tooLarge?: boolean;
   renderingDeferred?: boolean;
@@ -115,7 +146,7 @@ export interface WorkflowRun {
   definitionId?: number;
 }
 
-export type TimelineKind = "stage" | "job" | "step";
+export type TimelineKind = "stage" | "job" | "step" | "approval";
 
 export interface TimelineItem {
   id: string;

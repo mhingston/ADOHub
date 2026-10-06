@@ -1,0 +1,301 @@
+{
+  "value": [
+    {
+      "configuration": {
+        "createdBy": {
+          "displayName": "ADO Identity 1",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "7ac1b8d7-010b-46cd-ba3e-84e7f90136b8",
+          "uniqueName": "ado-identity-1@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource",
+          "descriptor": "descriptor-ea20bf1f5c5e"
+        },
+        "createdDate": "2026-04-22T07:20:20.0249897Z",
+        "isEnabled": true,
+        "isBlocking": true,
+        "isDeleted": false,
+        "settings": {
+          "minimumApproverCount": 1,
+          "creatorVoteCounts": false,
+          "allowDownvotes": false,
+          "resetOnSourcePush": false,
+          "requireVoteOnLastIteration": false,
+          "resetRejectionsOnSourcePush": false,
+          "blockLastPusherVote": false,
+          "requireVoteOnEachIteration": false,
+          "scope": [
+            {
+              "refName": null,
+              "matchKind": "Sanitized text.",
+              "repositoryId": null
+            }
+          ]
+        },
+        "isEnterpriseManaged": false,
+        "_links": {
+          "self": {
+            "href": "https://example.invalid/ado/resource"
+          },
+          "policyType": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "revision": 13,
+        "id": 387,
+        "url": "https://example.invalid/ado/resource",
+        "type": {
+          "id": "fa4e907d-c16b-4a4c-9dfa-4906e5d171dd",
+          "url": "https://example.invalid/ado/resource",
+          "displayName": "Minimum number of reviewers"
+        }
+      },
+      "artifactId": "vstfs:///CodeReview/CodeReviewId/00000000-0000-0000-0000-000000000002/42",
+      "evaluationId": "00000000-0000-0000-0000-000000000003",
+      "startedDate": "2026-10-05T08:14:48.35642Z",
+      "status": "queued",
+      "context": {}
+    },
+    {
+      "configuration": {
+        "createdBy": {
+          "displayName": "ADO Identity 4",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "ca55ceea-2bd0-418b-bde6-675690a3dc40",
+          "uniqueName": "ado-identity-4@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource",
+          "descriptor": "descriptor-ea20bf1f5c5e"
+        },
+        "createdDate": "2024-03-20T10:11:27.2282468Z",
+        "isEnabled": true,
+        "isBlocking": true,
+        "isDeleted": false,
+        "settings": {
+          "minimumApproverCount": 1,
+          "creatorVoteCounts": false,
+          "allowDownvotes": false,
+          "resetOnSourcePush": true,
+          "requireVoteOnLastIteration": false,
+          "resetRejectionsOnSourcePush": false,
+          "blockLastPusherVote": false,
+          "requireVoteOnEachIteration": false,
+          "scope": [
+            {
+              "refName": "refs/heads/main",
+              "matchKind": "Sanitized text.",
+              "repositoryId": null
+            }
+          ]
+        },
+        "isEnterpriseManaged": false,
+        "_links": {
+          "self": {
+            "href": "https://example.invalid/ado/resource"
+          },
+          "policyType": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "revision": 4,
+        "id": 389,
+        "url": "https://example.invalid/ado/resource",
+        "type": {
+          "id": "fa4e907d-c16b-4a4c-9dfa-4906e5d171dd",
+          "url": "https://example.invalid/ado/resource",
+          "displayName": "Minimum number of reviewers"
+        }
+      },
+      "artifactId": "vstfs:///CodeReview/CodeReviewId/00000000-0000-0000-0000-000000000002/42",
+      "evaluationId": "00000000-0000-0000-0000-000000000005",
+      "startedDate": "2026-10-05T08:14:48.35642Z",
+      "status": "queued",
+      "context": {}
+    },
+    {
+      "configuration": {
+        "createdBy": {
+          "displayName": "ADO Identity 6",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "f36ddb31-32f1-4024-97fc-a8b8b18b9e32",
+          "uniqueName": "ado-identity-6@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource",
+          "descriptor": "descriptor-ea20bf1f5c5e"
+        },
+        "createdDate": "2024-03-26T10:40:12.3082579Z",
+        "isEnabled": true,
+        "isBlocking": true,
+        "isDeleted": false,
+        "settings": {
+          "allowNoFastForward": true,
+          "allowSquash": true,
+          "scope": [
+            {
+              "refName": "refs/heads/main",
+              "matchKind": "Sanitized text.",
+              "repositoryId": null
+            }
+          ]
+        },
+        "isEnterpriseManaged": false,
+        "_links": {
+          "self": {
+            "href": "https://example.invalid/ado/resource"
+          },
+          "policyType": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "revision": 3,
+        "id": 616,
+        "url": "https://example.invalid/ado/resource",
+        "type": {
+          "id": "fa4e907d-c16b-4a4c-9dfa-4916e5d171ab",
+          "url": "https://example.invalid/ado/resource",
+          "displayName": "Require a merge strategy"
+        }
+      },
+      "artifactId": "vstfs:///CodeReview/CodeReviewId/00000000-0000-0000-0000-000000000002/42",
+      "evaluationId": "00000000-0000-0000-0000-000000000008",
+      "startedDate": "2026-10-02T12:31:34.7141839Z",
+      "status": "approved"
+    },
+    {
+      "configuration": {
+        "createdBy": {
+          "displayName": "ADO Identity 8",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "a86578ff-8fac-404c-bd5e-d762147e37d7",
+          "uniqueName": "ado-identity-8@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource",
+          "descriptor": "descriptor-ea20bf1f5c5e"
+        },
+        "createdDate": "2026-03-30T09:46:35.2358076Z",
+        "isEnabled": true,
+        "isBlocking": true,
+        "isDeleted": false,
+        "settings": {
+          "scope": [
+            {
+              "refName": "refs/heads/main",
+              "matchKind": "Sanitized text.",
+              "repositoryId": null
+            }
+          ]
+        },
+        "isEnterpriseManaged": false,
+        "_links": {
+          "self": {
+            "href": "https://example.invalid/ado/resource"
+          },
+          "policyType": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "revision": 1,
+        "id": 1324,
+        "url": "https://example.invalid/ado/resource",
+        "type": {
+          "id": "c6a1889d-b943-4856-b76f-9e46bb6b0df2",
+          "url": "https://example.invalid/ado/resource",
+          "displayName": "Comment requirements"
+        }
+      },
+      "artifactId": "vstfs:///CodeReview/CodeReviewId/00000000-0000-0000-0000-000000000002/42",
+      "evaluationId": "00000000-0000-0000-0000-000000000011",
+      "startedDate": "2026-10-02T12:31:34.7141839Z",
+      "completedDate": "2026-10-02T12:40:05.4307591Z",
+      "status": "approved"
+    },
+    {
+      "configuration": {
+        "createdBy": {
+          "displayName": "ADO Identity 10",
+          "url": "https://example.invalid/ado/resource",
+          "_links": {
+            "avatar": {
+              "href": "https://example.invalid/ado/resource"
+            }
+          },
+          "id": "3433fa91-52fe-4fb8-b2bd-dd3bc630ba6f",
+          "uniqueName": "ado-identity-10@example.invalid",
+          "imageUrl": "https://example.invalid/ado/resource",
+          "descriptor": "descriptor-ea20bf1f5c5e"
+        },
+        "createdDate": "2026-05-25T09:14:17.5654813Z",
+        "isEnabled": true,
+        "isBlocking": true,
+        "isDeleted": false,
+        "settings": {
+          "buildDefinitionId": 2113,
+          "queueOnSourceUpdateOnly": true,
+          "manualQueueOnly": false,
+          "displayName": "ADO Identity",
+          "validDuration": 180,
+          "scope": [
+            {
+              "refName": "refs/heads/main",
+              "matchKind": "Sanitized text.",
+              "repositoryId": "00000000-0000-0000-0000-000000000013"
+            }
+          ]
+        },
+        "isEnterpriseManaged": false,
+        "_links": {
+          "self": {
+            "href": "https://example.invalid/ado/resource"
+          },
+          "policyType": {
+            "href": "https://example.invalid/ado/resource"
+          }
+        },
+        "revision": 1,
+        "id": 1393,
+        "url": "https://example.invalid/ado/resource",
+        "type": {
+          "id": "0609b952-1397-4640-95ec-e00a01b2c241",
+          "url": "https://example.invalid/ado/resource",
+          "displayName": "Build"
+        }
+      },
+      "artifactId": "vstfs:///CodeReview/CodeReviewId/00000000-0000-0000-0000-000000000002/42",
+      "evaluationId": "00000000-0000-0000-0000-000000000015",
+      "startedDate": "2026-10-05T08:14:50.4690721Z",
+      "completedDate": "2026-10-05T08:26:32.8672116Z",
+      "status": "queued",
+      "context": {
+        "lastMergeCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "lastMergeSourceCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "lastMergeTargetCommitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "buildId": 9001,
+        "buildDefinitionId": 2113,
+        "buildDefinitionName": "Sanitized text.",
+        "buildIsNotCurrent": true,
+        "buildStartedUtc": "Sanitized text.",
+        "isExpired": true,
+        "buildAfterMerge": false,
+        "wasAutoRequeued": false,
+        "buildOutputPreview": null
+      }
+    }
+  ],
+  "count": 5
+}

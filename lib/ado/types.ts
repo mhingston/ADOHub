@@ -15,6 +15,18 @@ export interface AdoRepository {
   project?: { id?: string; name?: string };
 }
 
+export interface AdoProject {
+  id: string;
+  name: string;
+  description?: string;
+  visibility?: string;
+  state?: string;
+}
+
+export interface AdoConnectionData {
+  authenticatedUser?: { id?: string };
+}
+
 export interface AdoGitItem {
   path: string;
   gitObjectType?: string;
@@ -36,14 +48,24 @@ export interface AdoPullRequest {
   isDraft?: boolean;
   creationDate?: string;
   closedDate?: string;
+  updatedDate?: string;
   createdBy?: AdoIdentity;
   reviewers?: AdoIdentity[];
   sourceRefName: string;
   targetRefName: string;
   mergeStatus?: string;
+  repository?: Pick<AdoRepository, "id" | "name" | "webUrl">;
+  url?: string;
   lastMergeSourceCommit?: { commitId?: string };
   lastMergeTargetCommit?: { commitId?: string };
-  _links?: { web?: { href?: string } };
+  completionOptions?: {
+    mergeStrategy?: string;
+    deleteSourceBranch?: boolean;
+    transitionWorkItems?: boolean;
+  };
+  mergeOptions?: { conflict?: string };
+  completionQueueTime?: string;
+  _links?: Record<string, { href?: string }>;
 }
 
 export interface AdoComment {
@@ -61,6 +83,18 @@ export interface AdoThread {
   id: number;
   status?: string;
   comments?: AdoComment[];
+  threadContext?: {
+    filePath?: string;
+    leftFileStart?: { line?: number; offset?: number };
+    rightFileStart?: { line?: number; offset?: number };
+  };
+  pullRequestThreadContext?: {
+    changeTrackingId?: number;
+    iterationContext?: {
+      firstComparingIteration?: number;
+      secondComparingIteration?: number;
+    };
+  };
 }
 
 export interface AdoPullRequestIteration {
@@ -69,8 +103,27 @@ export interface AdoPullRequestIteration {
 
 export interface AdoPullRequestChange {
   changeId?: number;
+  changeTrackingId?: number;
   changeType?: string;
-  item?: { path?: string; gitObjectType?: string; isFolder?: boolean };
+  originalPath?: string;
+  item?: {
+    path?: string | null;
+    gitObjectType?: string;
+    isFolder?: boolean;
+    size?: number;
+    objectId?: string;
+  };
+}
+
+export interface AdoPullRequestIterationChanges {
+  changeEntries?: AdoPullRequestChange[];
+  nextSkip?: number;
+  nextTop?: number;
+  changes?: {
+    changeEntries?: AdoPullRequestChange[];
+    nextSkip?: number;
+    nextTop?: number;
+  };
 }
 
 export interface AdoBuild {
@@ -85,6 +138,7 @@ export interface AdoBuild {
   finishTime?: string;
   reason?: string;
   requestedFor?: AdoIdentity;
+  requestedBy?: AdoIdentity;
   definition?: { id?: number; name?: string };
   repository?: { id?: string; name?: string; type?: string };
   triggerInfo?: Record<string, string>;
@@ -108,13 +162,20 @@ export interface AdoTimelineRecord {
 
 export interface AdoPolicyEvaluation {
   evaluationId?: string;
+  startedDate?: string;
+  completedDate?: string;
   status?: string;
   configuration?: {
     id?: number;
     isEnabled?: boolean;
+    isDeleted?: boolean;
     isBlocking?: boolean;
     type?: { displayName?: string; id?: string };
-    settings?: Record<string, unknown>;
+    settings?: {
+      minimumApproverCount?: number;
+      scope?: Array<{ refName?: string | null; matchKind?: string; repositoryId?: string | null }>;
+      [key: string]: unknown;
+    };
   };
   context?: { buildId?: number };
 }

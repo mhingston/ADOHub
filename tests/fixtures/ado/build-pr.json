@@ -1,0 +1,37 @@
+{
+  "id": 900001,
+  "buildNumber": "sample-pr.1",
+  "status": "completed",
+  "result": "succeeded",
+  "sourceBranch": "refs/pull/42/merge",
+  "sourceVersion": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "queueTime": "2026-10-05T08:14:49.3904928Z",
+  "startTime": "2026-10-05T08:16:56.0910048Z",
+  "finishTime": "2026-10-05T08:26:32.6074839Z",
+  "reason": "pullRequest",
+  "requestedFor": {
+    "id": "c67f2fc3-91b6-4892-9fa4-7eccbc9e5838",
+    "displayName": "ADO Identity 3"
+  },
+  "requestedBy": {
+    "id": "c67f2fc3-91b6-4892-9fa4-7eccbc9e5838",
+    "displayName": "ADO Identity 3"
+  },
+  "definition": {
+    "id": 7,
+    "name": "Sample PR validation"
+  },
+  "repository": {
+    "id": "7ac1b8d7-010b-46cd-ba3e-84e7f90136b8",
+    "name": "Sample repository",
+    "type": "TfsGit"
+  },
+  "triggerInfo": {
+    "pr.number": "42"
+  },
+  "_links": {
+    "web": {
+      "href": "https://example.invalid/ado/resource"
+    }
+  }
+}

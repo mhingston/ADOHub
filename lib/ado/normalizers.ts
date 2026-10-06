@@ -71,13 +71,22 @@ function normalizePolicyStatus(status?: string): CheckStatus {
 
 export function normalizePolicyCheck(policy: AdoPolicyEvaluation): Check {
   const type = policy.configuration?.type?.displayName ?? "Branch policy";
+  const scope = policy.configuration?.settings?.scope?.map((entry) => entry.refName?.replace(/^refs\/heads\//, ""));
+  const scopeNames = [...new Set(scope?.filter((name): name is string => Boolean(name)))];
+  const scopedName = scopeNames.length > 0
+    ? `${type} · ${scopeNames.join(", ")}`
+    : scope?.length
+      ? `${type} · all branches`
+      : type;
+  const approvers = policy.configuration?.settings?.minimumApproverCount;
   return {
     id: `policy:${policy.evaluationId ?? policy.configuration?.id ?? type}`,
-    name: type,
+    name: scopedName,
     status: normalizePolicyStatus(policy.status),
     required: Boolean(policy.configuration?.isBlocking),
     source: "policy",
     runId: policy.context?.buildId ? String(policy.context.buildId) : undefined,
+    description: approvers === undefined ? undefined : `${approvers} approving ${approvers === 1 ? "vote" : "votes"} required`,
   };
 }
 
@@ -91,8 +100,9 @@ function normalizePrStatusState(state?: string): CheckStatus {
     case "notapplicable":
       return "skipped";
     case "pending":
+      return "queued";
     default:
-      return "running";
+      return "queued";
   }
 }
 
@@ -121,15 +131,25 @@ export function normalizeTimelineStatus(record: AdoTimelineRecord): RunStatus {
   return "queued";
 }
 
+function timelineKind(record: AdoTimelineRecord): TimelineItem["kind"] | null {
+  switch (record.type?.toLowerCase()) {
+    case "stage": return "stage";
+    case "job": return "job";
+    case "task": return "step";
+    case "checkpoint":
+    case "checkpoint.approval": return "approval";
+    default: return null;
+  }
+}
+
 export function normalizeTimelineRecord(record: AdoTimelineRecord): TimelineItem | null {
-  const type = record.type?.toLowerCase();
-  const kind = type === "stage" ? "stage" : type === "job" ? "job" : type === "task" ? "step" : null;
-  if (!kind || !record.name) return null;
+  const kind = timelineKind(record);
+  if (!kind) return null;
   return {
     id: record.id,
     parentId: record.parentId,
     kind,
-    name: record.name,
+    name: record.name ?? (kind === "approval" ? "Approval gate" : "Unnamed pipeline record"),
     status: normalizeTimelineStatus(record),
     order: record.order ?? 0,
     startTime: record.startTime,
@@ -140,11 +160,90 @@ export function normalizeTimelineRecord(record: AdoTimelineRecord): TimelineItem
   };
 }
 
+/**
+ * Keep the useful Stage → Job → Task hierarchy while accounting for ADO's
+ * additional Phase layer. Approval checkpoints are visible pipeline blockers;
+ * the structural Checkpoint parent is omitted when its Approval child exists.
+ */
+export function normalizeTimelineRecords(records: AdoTimelineRecord[]): TimelineItem[] {
+  const byId = new Map(records.map((record) => [record.id, record]));
+  const approvalParents = new Set(
+    records
+      .filter((record) => record.type?.toLowerCase() === "checkpoint.approval" && record.parentId)
+      .map((record) => record.parentId as string),
+  );
+  const items: TimelineItem[] = [];
+  const indexes = new Map<string, number>();
+
+  records.forEach((record, index) => {
+    if (record.type?.toLowerCase() === "checkpoint" && approvalParents.has(record.id)) return;
+    const item = normalizeTimelineRecord(record);
+    if (!item) return;
+
+    let parentId = record.parentId ?? undefined;
+    let hops = 0;
+    while (parentId && hops <= records.length) {
+      const parent = byId.get(parentId);
+      if (!parent) {
+        parentId = undefined;
+        break;
+      }
+      const parentType = parent.type?.toLowerCase();
+      if (parentType === "phase" || (parentType === "checkpoint" && approvalParents.has(parent.id))) {
+        parentId = parent.parentId;
+        hops += 1;
+        continue;
+      }
+      if (timelineKind(parent)) break;
+      parentId = parent.parentId;
+      hops += 1;
+    }
+
+    item.parentId = parentId;
+    items.push(item);
+    indexes.set(item.id, index);
+  });
+
+  const itemIds = new Set(items.map((item) => item.id));
+  const children = new Map<string, TimelineItem[]>();
+  const roots: TimelineItem[] = [];
+  for (const item of items) {
+    if (item.parentId && itemIds.has(item.parentId)) {
+      const siblings = children.get(item.parentId) ?? [];
+      siblings.push(item);
+      children.set(item.parentId, siblings);
+    } else {
+      roots.push(item);
+    }
+  }
+  const byOrder = (left: TimelineItem, right: TimelineItem) =>
+    left.order - right.order || (indexes.get(left.id) ?? 0) - (indexes.get(right.id) ?? 0);
+  roots.sort(byOrder);
+  for (const siblings of children.values()) siblings.sort(byOrder);
+
+  const sorted: TimelineItem[] = [];
+  const visited = new Set<string>();
+  const visit = (item: TimelineItem) => {
+    if (visited.has(item.id)) return;
+    visited.add(item.id);
+    sorted.push(item);
+    for (const child of children.get(item.id) ?? []) visit(child);
+  };
+  for (const root of roots) visit(root);
+  for (const item of [...items].sort(byOrder)) visit(item);
+  return sorted;
+}
+
 export function normalizeBuild(build: AdoBuild): WorkflowRun {
   const start = build.startTime ? Date.parse(build.startTime) : undefined;
   const finish = build.finishTime ? Date.parse(build.finishTime) : undefined;
   const prRaw = build.triggerInfo?.["pr.number"] ?? build.triggerInfo?.["pr.id"];
-  const prId = prRaw && /^\d+$/.test(prRaw) ? Number(prRaw) : undefined;
+  const branchPrId = /^refs\/pull\/(\d+)\/merge$/.exec(build.sourceBranch ?? "")?.[1];
+  const prId = prRaw && /^\d+$/.test(prRaw)
+    ? Number(prRaw)
+    : branchPrId
+      ? Number(branchPrId)
+      : undefined;
 
   return {
     id: String(build.id),
@@ -154,7 +253,7 @@ export function normalizeBuild(build: AdoBuild): WorkflowRun {
     branch: stripRef(build.sourceBranch),
     commit: build.sourceVersion,
     prId,
-    requestedBy: build.requestedFor?.displayName,
+    requestedBy: build.requestedFor?.displayName ?? build.requestedBy?.displayName,
     startTime: build.startTime ?? build.queueTime,
     finishTime: build.finishTime,
     durationMs: start !== undefined && finish !== undefined ? Math.max(0, finish - start) : undefined,
