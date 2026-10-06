@@ -2,6 +2,7 @@ import { PullRequestWorkflow } from "@/components/pull-request-workflow";
 import { getPullRequestChecks } from "@/lib/ado/checks";
 import { getPullRequest, getRepository } from "@/lib/ado/git";
 import { getCurrentUserId } from "@/lib/ado/identity";
+import { mutationsEnabledForOrg } from "@/lib/ado/mutations";
 
 export const dynamic = "force-dynamic";
 
@@ -16,5 +17,5 @@ export default async function PullRequestChecksPage({ params }: { params: Promis
     getCurrentUserId(org),
   ]);
   const base = `/${[org, project, repo].map(encodeURIComponent).join("/")}`;
-  return <PullRequestWorkflow org={org} project={project} repo={repo} base={base} activeTab="checks" mutationsEnabled={process.env.ADO_MUTATIONS_ENABLED === "true"} initial={{ pr, comments: [], checks, currentUserId }} />;
+  return <PullRequestWorkflow org={org} project={project} repo={repo} base={base} activeTab="checks" mutationsEnabled={mutationsEnabledForOrg(org)} initial={{ pr, comments: [], checks, currentUserId }} />;
 }

@@ -1,13 +1,20 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AdoHttpError, AzureDevOpsClient } from "@/lib/ado/client";
 import { publicError } from "@/lib/ado/errors";
-import { assertMutationAllowed } from "@/lib/ado/mutations";
+import { assertMutationAllowed, mutationsEnabledForOrg } from "@/lib/ado/mutations";
 import { createCompletionPayload, createInlineCommentPayload } from "@/lib/ado/pull-request-mutations";
 
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
 });
+
+function mutationRequest(origin: string | null = "https://adohub.test", fetchSite: string | null = "same-origin") {
+  const headers = new Headers();
+  if (origin !== null) headers.set("origin", origin);
+  if (fetchSite !== null) headers.set("sec-fetch-site", fetchSite);
+  return new Request("https://adohub.test/api/mutation", { method: "POST", headers });
+}
 
 describe("PR mutation payloads and safe Azure errors", () => {
   it("builds the minimal completion payload without enabling source deletion or work-item transitions", () => {
@@ -58,44 +65,136 @@ describe("PR mutation payloads and safe Azure errors", () => {
   });
 
   it("rejects disabled writes before making any Azure request", async () => {
+    vi.stubEnv("ADO_PAT", "test-token-only");
+    vi.stubEnv("ADO_ORG", "safe-org");
     vi.stubEnv("ADO_MUTATIONS_ENABLED", "false");
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     await expect(assertMutationAllowed({
-      org: "safe-org", project: "safe-project", repo: "safe-repo", resource: { kind: "pullRequest", id: 7 },
+      request: mutationRequest(), org: "safe-org", project: "safe-project", repo: "safe-repo", resource: { kind: "pullRequest", id: 7 },
     })).rejects.toMatchObject({ status: 403 });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("checks the allowlist and verifies the PR's repository before allowing a mutation", async () => {
+  it("enables writes by default for the configured organization when PAT and org are present", () => {
     vi.stubEnv("ADO_PAT", "test-token-only");
-    vi.stubEnv("ADO_MUTATIONS_ENABLED", "true");
     vi.stubEnv("ADO_ORG", "safe-org");
-    vi.stubEnv("ADO_PROJECT", "safe-project");
-    vi.stubEnv("ADO_REPO", "safe-repo");
+    vi.stubEnv("ADO_MUTATIONS_ENABLED", "");
+    expect(mutationsEnabledForOrg("SAFE-ORG")).toBe(true);
+    expect(mutationsEnabledForOrg("other-org")).toBe(false);
+
+    vi.stubEnv("ADO_MUTATIONS_ENABLED", "false");
+    expect(mutationsEnabledForOrg("safe-org")).toBe(false);
+
+    vi.stubEnv("ADO_MUTATIONS_ENABLED", "");
+    vi.stubEnv("ADO_PAT", " ");
+    expect(mutationsEnabledForOrg("safe-org")).toBe(false);
+  });
+
+  it("allows a matching PR without project or repo environment defaults and verifies its route repository", async () => {
+    vi.stubEnv("ADO_PAT", "test-token-only");
+    vi.stubEnv("ADO_ORG", "safe-org");
+    vi.stubEnv("ADO_MUTATIONS_ENABLED", "");
+    vi.stubEnv("ADO_PROJECT", "");
+    vi.stubEnv("ADO_REPO", "");
     const fetchMock = vi.fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "repo-id", name: "safe-repo" }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "repo-id", name: "route-repo" }), { status: 200 }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ repository: { id: "repo-id" } }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(assertMutationAllowed({
-      org: "safe-org", project: "safe-project", repo: "safe-repo", resource: { kind: "pullRequest", id: 7 },
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
     })).resolves.toBe("repo-id");
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);
+    expect(String(fetchMock.mock.calls[0][0])).toContain("/safe-org/route-project/_apis/git/repositories/route-repo");
+    expect(String(fetchMock.mock.calls[1][0])).toContain("/safe-org/route-project/_apis/git/repositories/repo-id/pullrequests/7");
   });
 
-  it("rejects a caller-supplied repository outside the deployment allowlist before network access", async () => {
+  it("rejects an explicitly different organization before network access", async () => {
     vi.stubEnv("ADO_PAT", "test-token-only");
-    vi.stubEnv("ADO_MUTATIONS_ENABLED", "true");
     vi.stubEnv("ADO_ORG", "safe-org");
-    vi.stubEnv("ADO_PROJECT", "safe-project");
-    vi.stubEnv("ADO_REPO", "safe-repo");
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     await expect(assertMutationAllowed({
-      org: "safe-org", project: "safe-project", repo: "other-repo", resource: { kind: "build", id: "42" },
+      request: mutationRequest(), org: "other-org", project: "route-project", repo: "route-repo", resource: { kind: "build", id: "42" },
     })).rejects.toMatchObject({ status: 403 });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects missing PAT or organization before network access", async () => {
+    vi.stubEnv("ADO_PAT", "");
+    vi.stubEnv("ADO_ORG", "safe-org");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(assertMutationAllowed({
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
+    })).rejects.toMatchObject({ status: 503 });
+
+    vi.stubEnv("ADO_PAT", "test-token-only");
+    vi.stubEnv("ADO_ORG", "");
+    await expect(assertMutationAllowed({
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
+    })).rejects.toMatchObject({ status: 503 });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a PR whose Azure repository differs from the repository in the route", async () => {
+    vi.stubEnv("ADO_PAT", "test-token-only");
+    vi.stubEnv("ADO_ORG", "safe-org");
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "route-repo-id", name: "route-repo" }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ repository: { id: "other-repo-id" } }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(assertMutationAllowed({
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
+    })).rejects.toMatchObject({ status: 403, message: "This pull request does not belong to the requested repository." });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("allows a build from the route repository and rejects one from another repository", async () => {
+    vi.stubEnv("ADO_PAT", "test-token-only");
+    vi.stubEnv("ADO_ORG", "safe-org");
+    const matchingBuildFetch = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "route-repo-id", name: "route-repo" }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ repository: { id: "route-repo-id" } }), { status: 200 }));
+    vi.stubGlobal("fetch", matchingBuildFetch);
+    await expect(assertMutationAllowed({
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "build", id: "42" },
+    })).resolves.toBe("route-repo-id");
+
+    const otherBuildFetch = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "route-repo-id", name: "route-repo" }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ repository: { id: "other-repo-id" } }), { status: 200 }));
+    vi.stubGlobal("fetch", otherBuildFetch);
+    await expect(assertMutationAllowed({
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "build", id: "42" },
+    })).rejects.toMatchObject({ status: 403, message: "This build does not belong to the requested repository." });
+  });
+
+  it("rejects cross-origin, same-site sibling, and originless writes before Azure requests", async () => {
+    vi.stubEnv("ADO_PAT", "test-token-only");
+    vi.stubEnv("ADO_ORG", "safe-org");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const target = {
+      org: "safe-org",
+      project: "route-project",
+      repo: "route-repo",
+      resource: { kind: "pullRequest" as const, id: 7 },
+    };
+
+    await expect(assertMutationAllowed({ request: mutationRequest("https://attacker.test", "cross-site"), ...target }))
+      .rejects.toMatchObject({ status: 403, message: "Cross-origin mutation requests are not allowed." });
+    await expect(assertMutationAllowed({ request: mutationRequest("https://attacker.test", null), ...target }))
+      .rejects.toMatchObject({ status: 403, message: "Cross-origin mutation requests are not allowed." });
+    await expect(assertMutationAllowed({ request: mutationRequest("https://subdomain.adohub.test", "same-site"), ...target }))
+      .rejects.toMatchObject({ status: 403, message: "Cross-origin mutation requests are not allowed." });
+    await expect(assertMutationAllowed({ request: mutationRequest("https://adohub.test", "cross-site"), ...target }))
+      .rejects.toMatchObject({ status: 403, message: "Cross-origin mutation requests are not allowed." });
+    await expect(assertMutationAllowed({ request: mutationRequest(null, null), ...target }))
+      .rejects.toMatchObject({ status: 403, message: "Cross-origin mutation requests are not allowed." });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

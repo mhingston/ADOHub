@@ -45,10 +45,9 @@ Set these server-side environment variables (for example, in a local `.env.local
 ```text
 ADO_PAT=...
 ADO_ORG=your-organization
-ADO_PROJECT=your-project
-ADO_REPO=your-repository
-ADO_MUTATIONS_ENABLED=false
 ```
+
+`ADO_PROJECT` and `ADO_REPO` are optional defaults for the repository selector. Writes are enabled by default when `ADO_PAT` and `ADO_ORG` are set. To disable every write, set `ADO_MUTATIONS_ENABLED=false`.
 
 Never use `NEXT_PUBLIC_*` for the PAT. The browser receives only ADOHub API responses; it does not call Azure DevOps directly.
 
@@ -58,11 +57,11 @@ Suggested minimum PAT scopes:
 - PR writes: **Code (Read & write)** for comments, votes, completion and PR lifecycle actions.
 - Pipeline cancel/re-run: **Build (Read & execute)**.
 
-Azure DevOps permissions and organization policies can require additional access. Keep scopes and repository permissions as narrow as possible.
+Azure DevOps permissions and organization policies can require additional access. Keep PAT scopes and Azure DevOps permissions as narrow as possible.
 
-Mutations are disabled unless `ADO_MUTATIONS_ENABLED=true`. When enabled, `ADO_ORG`, `ADO_PROJECT` and `ADO_REPO` form a deployment-side allowlist. Each write resolves the configured repository and verifies that the requested PR or build belongs to it before sending the mutation. The browser cannot override this allowlist.
+When writes are enabled, `ADO_ORG` is the organization boundary. Each write resolves the project and repository from the requested ADOHub route, then verifies through Azure DevOps that the target PR or build belongs to that repository before sending the mutation. Requests for a different organization are rejected. Project and repository environment variables are not required for authorization. This allows writes to any repository in `ADO_ORG` that the PAT identity has permission to change; the browser cannot supply or override the PAT.
 
-PAT mode is intended for local, single-user or internal development. A shared deployment requires application authentication and authorization. Entra delegated authentication is not included in this slice.
+PAT mode is intended for local, single-user or internal development. Because writes are enabled by default, scope the PAT and the account's Azure DevOps permissions to the repositories and actions that should be available. A shared deployment requires application authentication and authorization. Entra delegated authentication is not included in this slice.
 
 Install and run:
 

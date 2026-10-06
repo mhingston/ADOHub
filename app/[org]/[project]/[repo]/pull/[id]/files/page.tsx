@@ -1,6 +1,7 @@
 import { PullRequestTabs } from "@/components/pull-request-tabs";
 import { PullRequestFiles } from "@/components/pull-request-files";
 import { getPullRequest, getPullRequestFiles, getRepository } from "@/lib/ado/git";
+import { mutationsEnabledForOrg } from "@/lib/ado/mutations";
 
 export default async function FilesPage({ params }: { params: Promise<{ org: string; project: string; repo: string; id: string }> }) {
   const { org, project, repo, id } = await params;
@@ -15,7 +16,7 @@ export default async function FilesPage({ params }: { params: Promise<{ org: str
   return (
     <>
       <PullRequestTabs pr={pr} base={base} activeTab="files" />
-      <PullRequestFiles org={org} project={project} repo={repo} prId={prId} files={files} mutationsEnabled={process.env.ADO_MUTATIONS_ENABLED === "true"} />
+      <PullRequestFiles org={org} project={project} repo={repo} prId={prId} files={files} mutationsEnabled={mutationsEnabledForOrg(org)} />
     </>
   );
 }

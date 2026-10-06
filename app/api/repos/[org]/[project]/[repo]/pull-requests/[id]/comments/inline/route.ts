@@ -33,7 +33,7 @@ export async function POST(
   }
 
   try {
-    const repoId = await assertMutationAllowed({ org, project, repo, resource: { kind: "pullRequest", id: prId } });
+    const repoId = await assertMutationAllowed({ request, org, project, repo, resource: { kind: "pullRequest", id: prId } });
     const anchor = await getPullRequestInlineCommentAnchor(org, project, repoId, prId, filePath, lineNumber, side);
     await addPullRequestInlineComment(org, project, repoId, prId, content.trim(), anchor);
     return NextResponse.json({ ok: true }, { status: 201 });

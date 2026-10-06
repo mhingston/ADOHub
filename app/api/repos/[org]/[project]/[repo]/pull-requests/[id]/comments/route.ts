@@ -17,7 +17,7 @@ export async function POST(request: Request, context: { params: Promise<{ org: s
     return NextResponse.json({ error: "Enter a comment of 1 to 10,000 characters." }, { status: 400 });
   }
   try {
-    const repoId = await assertMutationAllowed({ org, project, repo, resource: { kind: "pullRequest", id: prId } });
+    const repoId = await assertMutationAllowed({ request, org, project, repo, resource: { kind: "pullRequest", id: prId } });
     await addPullRequestComment(org, project, repoId, prId, content.trim());
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {

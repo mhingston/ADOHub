@@ -20,7 +20,7 @@ export async function PUT(request: Request, context: { params: Promise<{ org: st
     return NextResponse.json({ error: "Choose a supported Azure DevOps review vote." }, { status: 400 });
   }
   try {
-    const repoId = await assertMutationAllowed({ org, project, repo, resource: { kind: "pullRequest", id: prId } });
+    const repoId = await assertMutationAllowed({ request, org, project, repo, resource: { kind: "pullRequest", id: prId } });
     const userId = await getCurrentUserId(org);
     await setPullRequestVote(org, project, repoId, prId, userId, vote as AdoVote);
     return NextResponse.json({ ok: true });

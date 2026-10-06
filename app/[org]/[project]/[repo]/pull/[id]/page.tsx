@@ -2,6 +2,7 @@ import { PullRequestWorkflow } from "@/components/pull-request-workflow";
 import { getPullRequestChecks } from "@/lib/ado/checks";
 import { getPullRequest, getPullRequestComments, getRepository } from "@/lib/ado/git";
 import { getCurrentUserId } from "@/lib/ado/identity";
+import { mutationsEnabledForOrg } from "@/lib/ado/mutations";
 
 export default async function PullRequestPage({ params }: { params: Promise<{ org: string; project: string; repo: string; id: string }> }) {
   const { org, project, repo, id } = await params;
@@ -15,5 +16,5 @@ export default async function PullRequestPage({ params }: { params: Promise<{ or
     getCurrentUserId(org),
   ]);
   const base = `/${[org, project, repo].map(encodeURIComponent).join("/")}`;
-  return <PullRequestWorkflow org={org} project={project} repo={repo} base={base} activeTab="conversation" mutationsEnabled={process.env.ADO_MUTATIONS_ENABLED === "true"} initial={{ pr, comments, checks, currentUserId }} />;
+  return <PullRequestWorkflow org={org} project={project} repo={repo} base={base} activeTab="conversation" mutationsEnabled={mutationsEnabledForOrg(org)} initial={{ pr, comments, checks, currentUserId }} />;
 }
