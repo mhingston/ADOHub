@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import iterationFixture from "./fixtures/ado/pull-request-iteration-changes.json";
 import deleteFixture from "./fixtures/ado/pull-request-iteration-changes-deletes.json";
 import manyFilesFixture from "./fixtures/ado/pull-request-many-files.json";
-import { isInlineDiffDeferred, normalizeIterationChangePage, normalizePullRequestFileChanges } from "@/lib/ado/git";
+import { createPullRequestFilePatch, isInlineDiffDeferred, normalizeIterationChangePage, normalizePullRequestFileChanges } from "@/lib/ado/git";
 import type { AdoPullRequestChange, AdoPullRequestIterationChanges } from "@/lib/ado/types";
 
 function changesOf(fixture: { changes: { changeEntries: unknown[]; nextSkip?: number; nextTop?: number } }) {
@@ -43,5 +43,18 @@ describe("PR iteration changes captured from Azure DevOps", () => {
       item: { path: "/new/name.txt", size: 12 },
     }]);
     expect(file).toMatchObject({ path: "/new/name.txt", previousPath: "/old/name.txt", changeType: "rename", size: 12 });
+  });
+
+  it("uses the original path for the old side of a renamed file patch", () => {
+    const patch = createPullRequestFilePatch(
+      "/old/name.txt",
+      "/new/name.txt",
+      "before\n",
+      "after\n",
+      "basecommit",
+      "sourcecommit",
+    );
+    expect(patch).toContain("--- a/old/name.txt");
+    expect(patch).toContain("+++ b/new/name.txt");
   });
 });

@@ -173,6 +173,17 @@ export function isInlineDiffDeferred(index: number, maxDiffFiles: number) {
   return index >= maxDiffFiles;
 }
 
+export function createPullRequestFilePatch(
+  beforePath: string,
+  afterPath: string,
+  before: string,
+  after: string,
+  beforeLabel: string,
+  afterLabel: string,
+) {
+  return createTwoFilesPatch(`a${beforePath}`, `b${afterPath}`, before, after, beforeLabel, afterLabel, { context: 4 });
+}
+
 export async function listPullRequests(
   org: string,
   project: string,
@@ -354,7 +365,7 @@ export async function getPullRequestFiles(
       previousPath,
       changeType,
       size,
-      patch: createTwoFilesPatch(`a${path}`, `b${path}`, before, after, targetCommit.slice(0, 8), sourceCommit.slice(0, 8), { context: 4 }),
+      patch: createPullRequestFilePatch(beforePath, path, before, after, targetCommit.slice(0, 8), sourceCommit.slice(0, 8)),
     } satisfies PullRequestFile;
   });
 }
