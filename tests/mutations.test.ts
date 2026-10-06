@@ -9,6 +9,13 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+function mutationRequest(origin: string | null = "https://adohub.test", fetchSite: string | null = "same-origin") {
+  const headers = new Headers();
+  if (origin !== null) headers.set("origin", origin);
+  if (fetchSite !== null) headers.set("sec-fetch-site", fetchSite);
+  return new Request("https://adohub.test/api/mutation", { method: "POST", headers });
+}
+
 describe("PR mutation payloads and safe Azure errors", () => {
   it("builds the minimal completion payload without enabling source deletion or work-item transitions", () => {
     expect(createCompletionPayload("0123456789abcdef", "squash", false)).toEqual({
@@ -64,7 +71,7 @@ describe("PR mutation payloads and safe Azure errors", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     await expect(assertMutationAllowed({
-      org: "safe-org", project: "safe-project", repo: "safe-repo", resource: { kind: "pullRequest", id: 7 },
+      request: mutationRequest(), org: "safe-org", project: "safe-project", repo: "safe-repo", resource: { kind: "pullRequest", id: 7 },
     })).rejects.toMatchObject({ status: 403 });
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -96,7 +103,7 @@ describe("PR mutation payloads and safe Azure errors", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(assertMutationAllowed({
-      org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
     })).resolves.toBe("repo-id");
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);
@@ -110,7 +117,7 @@ describe("PR mutation payloads and safe Azure errors", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     await expect(assertMutationAllowed({
-      org: "other-org", project: "route-project", repo: "route-repo", resource: { kind: "build", id: "42" },
+      request: mutationRequest(), org: "other-org", project: "route-project", repo: "route-repo", resource: { kind: "build", id: "42" },
     })).rejects.toMatchObject({ status: 403 });
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -121,13 +128,13 @@ describe("PR mutation payloads and safe Azure errors", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     await expect(assertMutationAllowed({
-      org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
     })).rejects.toMatchObject({ status: 503 });
 
     vi.stubEnv("ADO_PAT", "test-token-only");
     vi.stubEnv("ADO_ORG", "");
     await expect(assertMutationAllowed({
-      org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
     })).rejects.toMatchObject({ status: 503 });
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -141,7 +148,7 @@ describe("PR mutation payloads and safe Azure errors", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(assertMutationAllowed({
-      org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "pullRequest", id: 7 },
     })).rejects.toMatchObject({ status: 403, message: "This pull request does not belong to the requested repository." });
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
@@ -154,7 +161,7 @@ describe("PR mutation payloads and safe Azure errors", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ repository: { id: "route-repo-id" } }), { status: 200 }));
     vi.stubGlobal("fetch", matchingBuildFetch);
     await expect(assertMutationAllowed({
-      org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "build", id: "42" },
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "build", id: "42" },
     })).resolves.toBe("route-repo-id");
 
     const otherBuildFetch = vi.fn()
@@ -162,8 +169,33 @@ describe("PR mutation payloads and safe Azure errors", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ repository: { id: "other-repo-id" } }), { status: 200 }));
     vi.stubGlobal("fetch", otherBuildFetch);
     await expect(assertMutationAllowed({
-      org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "build", id: "42" },
+      request: mutationRequest(), org: "safe-org", project: "route-project", repo: "route-repo", resource: { kind: "build", id: "42" },
     })).rejects.toMatchObject({ status: 403, message: "This build does not belong to the requested repository." });
+  });
+
+  it("rejects cross-origin, same-site sibling, and originless writes before Azure requests", async () => {
+    vi.stubEnv("ADO_PAT", "test-token-only");
+    vi.stubEnv("ADO_ORG", "safe-org");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const target = {
+      org: "safe-org",
+      project: "route-project",
+      repo: "route-repo",
+      resource: { kind: "pullRequest" as const, id: 7 },
+    };
+
+    await expect(assertMutationAllowed({ request: mutationRequest("https://attacker.test", "cross-site"), ...target }))
+      .rejects.toMatchObject({ status: 403, message: "Cross-origin mutation requests are not allowed." });
+    await expect(assertMutationAllowed({ request: mutationRequest("https://attacker.test", null), ...target }))
+      .rejects.toMatchObject({ status: 403, message: "Cross-origin mutation requests are not allowed." });
+    await expect(assertMutationAllowed({ request: mutationRequest("https://subdomain.adohub.test", "same-site"), ...target }))
+      .rejects.toMatchObject({ status: 403, message: "Cross-origin mutation requests are not allowed." });
+    await expect(assertMutationAllowed({ request: mutationRequest("https://adohub.test", "cross-site"), ...target }))
+      .rejects.toMatchObject({ status: 403, message: "Cross-origin mutation requests are not allowed." });
+    await expect(assertMutationAllowed({ request: mutationRequest(null, null), ...target }))
+      .rejects.toMatchObject({ status: 403, message: "Cross-origin mutation requests are not allowed." });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("does not automatically retry a POST after a transient Azure response", async () => {

@@ -15,6 +15,7 @@ export type MutationResource =
   | { kind: "build"; id: string };
 
 export interface MutationTarget {
+  request: Request;
   org: string;
   project: string;
   repo: string;
@@ -23,6 +24,26 @@ export interface MutationTarget {
 
 function same(left: string, right: string) {
   return left.trim().toLocaleLowerCase("en-US") === right.trim().toLocaleLowerCase("en-US");
+}
+
+function assertSameOriginRequest(request: Request) {
+  const origin = request.headers.get("origin");
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if (!origin || origin === "null" || (fetchSite && fetchSite.toLocaleLowerCase("en-US") !== "same-origin")) {
+    throw new MutationAccessError("Cross-origin mutation requests are not allowed.", 403);
+  }
+
+  let parsedOrigin: URL;
+  let requestOrigin: string;
+  try {
+    parsedOrigin = new URL(origin);
+    requestOrigin = new URL(request.url).origin;
+  } catch {
+    throw new MutationAccessError("Cross-origin mutation requests are not allowed.", 403);
+  }
+  if (origin !== parsedOrigin.origin || parsedOrigin.origin !== requestOrigin) {
+    throw new MutationAccessError("Cross-origin mutation requests are not allowed.", 403);
+  }
 }
 
 export function mutationsEnabledForOrg(org: string): boolean {
@@ -39,7 +60,9 @@ export function mutationsEnabledForOrg(org: string): boolean {
  * The configured organization and PAT enable writes by default. Before a write,
  * Azure reads prove the requested PR or build belongs to the route repository.
  */
-export async function assertMutationAllowed({ org, project, repo, resource }: MutationTarget): Promise<string> {
+export async function assertMutationAllowed({ request, org, project, repo, resource }: MutationTarget): Promise<string> {
+  assertSameOriginRequest(request);
+
   if (process.env.ADO_MUTATIONS_ENABLED?.trim().toLocaleLowerCase("en-US") === "false") {
     throw new MutationAccessError("Mutations are disabled for this ADOHub deployment.", 403);
   }

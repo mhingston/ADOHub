@@ -17,7 +17,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ org: 
     return NextResponse.json({ error: "Choose abandon or reactivate." }, { status: 400 });
   }
   try {
-    const repoId = await assertMutationAllowed({ org, project, repo, resource: { kind: "pullRequest", id: prId } });
+    const repoId = await assertMutationAllowed({ request, org, project, repo, resource: { kind: "pullRequest", id: prId } });
     const updated = await setPullRequestStatus(org, project, repoId, prId, status);
     return NextResponse.json({ status: updated.status });
   } catch (error) {

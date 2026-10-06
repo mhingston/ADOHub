@@ -18,7 +18,7 @@ export async function POST(request: Request, context: { params: Promise<{ org: s
     return NextResponse.json({ error: "Choose a merge strategy and source-branch option." }, { status: 400 });
   }
   try {
-    const repoId = await assertMutationAllowed({ org, project, repo, resource: { kind: "pullRequest", id: prId } });
+    const repoId = await assertMutationAllowed({ request, org, project, repo, resource: { kind: "pullRequest", id: prId } });
     const updated = await completePullRequest(org, project, repoId, prId, {
       mergeStrategy: body.mergeStrategy as MergeStrategy,
       deleteSourceBranch: body.deleteSourceBranch,
