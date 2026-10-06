@@ -15,6 +15,53 @@ type Props = {
   mutationsEnabled: boolean;
 };
 
+type FileTreeNode = {
+  name: string;
+  path: string;
+  children: Map<string, FileTreeNode>;
+  fileIndex?: number;
+};
+
+function sortFileTree(nodes: Iterable<FileTreeNode>): FileTreeNode[] {
+  return [...nodes].sort((left, right) => {
+    const leftIsDirectory = left.fileIndex === undefined;
+    const rightIsDirectory = right.fileIndex === undefined;
+    if (leftIsDirectory !== rightIsDirectory) return leftIsDirectory ? -1 : 1;
+    return left.name.localeCompare(right.name);
+  });
+}
+
+function buildFileTree(files: PullRequestFile[]): FileTreeNode[] {
+  const roots = new Map<string, FileTreeNode>();
+
+  files.forEach((file, fileIndex) => {
+    const segments = file.path.split("/").filter(Boolean);
+    let nodes = roots;
+    let node: FileTreeNode | undefined;
+
+    segments.forEach((segment, index) => {
+      const path = `/${segments.slice(0, index + 1).join("/")}`;
+      node = nodes.get(segment);
+      if (!node) {
+        node = { name: segment, path, children: new Map() };
+        nodes.set(segment, node);
+      }
+      if (index === segments.length - 1) node.fileIndex = fileIndex;
+      nodes = node.children;
+    });
+  });
+
+  return sortFileTree(roots.values());
+}
+
+function changeMarker(changeType: string) {
+  const type = changeType.toLowerCase();
+  if (type.includes("add")) return { label: "A", kind: "added", description: "Added" };
+  if (type.includes("delete")) return { label: "D", kind: "deleted", description: "Deleted" };
+  if (type.includes("rename")) return { label: "R", kind: "renamed", description: "Renamed" };
+  return { label: "M", kind: "modified", description: "Modified" };
+}
+
 function InlineCommentForm({
   filePath,
   lineNumber,
@@ -73,19 +120,63 @@ export function PullRequestFiles({ org, project, repo, prId, files, mutationsEna
   const [mode, setMode] = useState<DiffModeEnum>(DiffModeEnum.Split);
   const [postedMessages, setPostedMessages] = useState<Record<string, string>>({});
   const [collapsedFiles, setCollapsedFiles] = useState<Record<string, boolean>>({});
+  const [collapsedFolders, setCollapsedFolders] = useState<Record<string, boolean>>({});
+  const [selectedFile, setSelectedFile] = useState<string>();
   const componentId = useId();
   const target = `/api/repos/${[org, project, repo].map(encodeURIComponent).join("/")}/pull-requests/${prId}`;
+  const fileTree = buildFileTree(files);
+
+  function renderTree(nodes: FileTreeNode[]): ReactNode {
+    return <ul className="file-tree-list">{nodes.map((node) => {
+      const children = sortFileTree(node.children.values());
+      const isFile = node.fileIndex !== undefined;
+      const isCollapsed = Boolean(collapsedFolders[node.path]);
+      const file = isFile ? files[node.fileIndex!] : undefined;
+      const marker = file ? changeMarker(file.changeType) : undefined;
+      const diffId = isFile ? `${componentId}-diff-${node.fileIndex}` : undefined;
+
+      return <li className="file-tree-node" key={node.path}>
+        {file ? <a
+            className={`file-tree-file-link ${selectedFile === file.path ? "selected" : ""}`}
+            href={`#${diffId}`}
+            aria-label={`${marker?.description}: ${file.path}`}
+            aria-current={selectedFile === file.path ? "location" : undefined}
+            onClick={() => {
+              setSelectedFile(file.path);
+              setCollapsedFiles((current) => ({ ...current, [file.path]: false }));
+            }}
+          >
+            <span className="file-tree-name" title={file.path.split("/").at(-1)}>{node.name}</span>
+            <span className={`file-tree-marker ${marker?.kind ?? ""}`} aria-hidden="true">{marker?.label}</span>
+          </a> : <button
+          type="button"
+          className="file-tree-folder"
+          aria-expanded={!isCollapsed}
+          onClick={() => setCollapsedFolders((current) => ({ ...current, [node.path]: !current[node.path] }))}
+        >
+          <span className={`file-tree-chevron ${isCollapsed ? "" : "expanded"}`} aria-hidden="true">▸</span>
+          <span className="file-tree-name" title={node.name}>{node.name}</span>
+        </button>}
+        {children.length > 0 && (!isFile || !isCollapsed) ? renderTree(children) : null}
+      </li>;
+    })}</ul>;
+  }
 
   return (
-    <>
-      <div className="page-heading diff-toolbar">
-        <span className="muted">{files.length} changed {files.length === 1 ? "file" : "files"}</span>
-        <div className="actions" role="group" aria-label="Diff layout">
-          <button type="button" className={`button ${mode === DiffModeEnum.Split ? "primary" : ""}`} onClick={() => setMode(DiffModeEnum.Split)}>Split</button>
-          <button type="button" className={`button ${mode === DiffModeEnum.Unified ? "primary" : ""}`} onClick={() => setMode(DiffModeEnum.Unified)}>Unified</button>
+    <div className="file-review-layout">
+      {files.length > 0 ? <nav className="file-tree" aria-label="Changed files">
+        <div className="file-tree-heading"><strong>Files</strong><span className="muted small">{files.length}</span></div>
+        {renderTree(fileTree)}
+      </nav> : null}
+      <div className="file-review-content">
+        <div className="page-heading diff-toolbar">
+          <span className="muted">{files.length} changed {files.length === 1 ? "file" : "files"}</span>
+          <div className="actions" role="group" aria-label="Diff layout">
+            <button type="button" className={`button ${mode === DiffModeEnum.Split ? "primary" : ""}`} onClick={() => setMode(DiffModeEnum.Split)}>Split</button>
+            <button type="button" className={`button ${mode === DiffModeEnum.Unified ? "primary" : ""}`} onClick={() => setMode(DiffModeEnum.Unified)}>Unified</button>
+          </div>
         </div>
-      </div>
-      {files.length === 0 ? <div className="empty-state">No changed files found.</div> : files.map((file, index) => {
+        {files.length === 0 ? <div className="empty-state">No changed files found.</div> : files.map((file, index) => {
         const comments = file.inlineComments ?? [];
         const hasContent = file.beforeContent !== undefined && file.afterContent !== undefined;
         const patches = hasContent ? createDiffPatches(file.previousPath ?? file.path, file.path, file.beforeContent!, file.afterContent!) : [];
@@ -104,7 +195,7 @@ export function PullRequestFiles({ org, project, repo, prId, files, mutationsEna
         ) : undefined;
 
         return (
-          <section className="diff-card" key={file.path}>
+          <section className="diff-card" id={`${componentId}-diff-${index}`} tabIndex={-1} key={file.path}>
             <div className="diff-header">
               <button
                 type="button"
@@ -148,8 +239,9 @@ export function PullRequestFiles({ org, project, repo, prId, files, mutationsEna
             </div>
           </section>
         );
-      })}
-      <p className="muted small">All changed files are listed. Inline diffs are rendered for the first 30 files and capped at 400 KB of combined text per file.{mutationsEnabled ? " Select a changed line to add an Azure DevOps review comment." : " Inline comments are disabled for this deployment."}</p>
-    </>
+        })}
+        <p className="muted small">All changed files are listed. Inline diffs are rendered for the first 30 files and capped at 400 KB of combined text per file.{mutationsEnabled ? " Select a changed line to add an Azure DevOps review comment." : " Inline comments are disabled for this deployment."}</p>
+      </div>
+    </div>
   );
 }
