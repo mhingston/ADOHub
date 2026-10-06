@@ -25,6 +25,13 @@ export interface Repository {
   projectId?: string;
 }
 
+export interface ProjectSummary {
+  id: string;
+  name: string;
+  description?: string;
+  visibility?: string;
+}
+
 export interface RepositoryItem {
   path: string;
   name: string;

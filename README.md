@@ -11,6 +11,7 @@ PR → review/comment → resolve blockers → complete
 
 ## Current features
 
+- Organization project and project repository browsing through the breadcrumb hierarchy.
 - Repository root, default branch and branch browsing.
 - Paginated pull request lists, reviewers, discussion and merge state.
 - Current policy, status and PR-build checks, with old status history collapsed by context.
@@ -29,10 +30,11 @@ The read workflow has been exercised against a real Azure DevOps Git repository 
 - Policy evaluations are scoped to the project-level PR artifact. Repeated PR status contexts are history; ADOHub keeps the newest timestamp per context. Distinct policy configurations/scopes remain visible.
 - PR-associated builds were observed with both `refs/pull/{id}/merge` and `triggerInfo` values such as `pr.number`. Timeline data has Stage, Phase, Job, Task and Checkpoint records; Phase is folded into Stage → Job → Task, and approval checkpoints remain visible.
 - Build log responses are text and `startLine` is one-based. A trailing newline does not add an extra log line. A queued or approval-blocked run may have no active task log yet.
+- Organization breadcrumbs list projects accessible to the authenticated user; project breadcrumbs list repositories in that project using Azure DevOps REST API 7.1.
 
 Policy evaluations and PR statuses use preview REST versions; those versions are isolated in `lib/ado` and normalized into stable domain types.
 
-Relevant Microsoft REST references: [iteration changes](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-iteration-changes/get?view=azure-devops-rest-7.1), [PR thread creation](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-threads/create?view=azure-devops-rest-7.1), [reviewer votes](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-reviewers/create-pull-request-reviewer?view=azure-devops-rest-7.1), [PR update/completion](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-requests/update?view=azure-devops-rest-7.1), [policy evaluations](https://learn.microsoft.com/en-us/rest/api/azure/devops/policy/evaluations?view=azure-devops-rest-7.1) and [build listing](https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/list?view=azure-devops-rest-7.1).
+Relevant Microsoft REST references: [project listing](https://learn.microsoft.com/en-us/rest/api/azure/devops/core/projects/list?view=azure-devops-rest-7.1), [iteration changes](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-iteration-changes/get?view=azure-devops-rest-7.1), [PR thread creation](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-threads/create?view=azure-devops-rest-7.1), [reviewer votes](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-reviewers/create-pull-request-reviewer?view=azure-devops-rest-7.1), [PR update/completion](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-requests/update?view=azure-devops-rest-7.1), [policy evaluations](https://learn.microsoft.com/en-us/rest/api/azure/devops/policy/evaluations?view=azure-devops-rest-7.1) and [build listing](https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds/list?view=azure-devops-rest-7.1).
 
 ## Setup
 
@@ -88,6 +90,8 @@ npm run build
 ## URL structure
 
 ```text
+/:org
+/:org/:project
 /:org/:project/:repo
 /:org/:project/:repo/pulls
 /:org/:project/:repo/pull/:id

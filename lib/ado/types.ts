@@ -15,6 +15,14 @@ export interface AdoRepository {
   project?: { id?: string; name?: string };
 }
 
+export interface AdoProject {
+  id: string;
+  name: string;
+  description?: string;
+  visibility?: string;
+  state?: string;
+}
+
 export interface AdoConnectionData {
   authenticatedUser?: { id?: string };
 }
